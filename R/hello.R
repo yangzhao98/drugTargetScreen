@@ -27,8 +27,8 @@ hello <- function() {
 #' @export
 getPaths <- function(path) {
   if(!Sys.info()["sysname"] %in% "Windows") {
-    paste("/mnt/c",path,sep="")
+    paste("/mnt/e",path,sep="")
   } else {
-    paste("C:",path,sep="")
+    paste("E:",path,sep="")
   }
 }
