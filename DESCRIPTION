@@ -9,13 +9,22 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
 Imports: 
+    CMplot,
     data.table,
     dplyr,
     ggplot2,
+    ggrepel,
+    ggsci,
+    ieugwasr,
+    MendelianRandomization,
     mr.divw,
     mr.raps,
     mrclust,
     phenoscanner,
+    plinkbinr,
+    plyr,
+    qvalue,
     stats,
+    susieR,
     TwoSampleMR
 RoxygenNote: 7.2.3
