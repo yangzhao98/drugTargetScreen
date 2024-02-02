@@ -4,7 +4,7 @@
 \alias{readHarmonizedGWASCatalogGRCh37}
 \title{read harmonized summary statistics from GWAS Catalog}
 \usage{
-readHarmonizedGWASCatalogGRCh37(filename, type)
+readHarmonizedGWASCatalogGRCh37(filename, type, ...)
 }
 \arguments{
 \item{filename}{location and file name of a specific data set}

@@ -5,10 +5,10 @@
 #'
 #' @export
 
-readHarmonizedGWASCatalogGRCh37 <- function(filename,type) {
+readHarmonizedGWASCatalogGRCh37 <- function(filename,type,...) {
   type <- match.arg(type,c("exposure","outcome"))
   TwoSampleMR::format_data(
-    dat=data.table::setDF(data.table::fread(filename)),
+    dat=data.table::setDF(data.table::fread(filename,...)),
     type=type,
     snp_col="hm_rsid",
     beta_col="hm_beta",
@@ -20,6 +20,7 @@ readHarmonizedGWASCatalogGRCh37 <- function(filename,type) {
     chr_col="hm_chrom",
     pos_col="hm_pos")
 }
+
 
 # datExp <- with(datExp, datExp[!is.na(SNP) & pval.exposure<1e-4,])
 
