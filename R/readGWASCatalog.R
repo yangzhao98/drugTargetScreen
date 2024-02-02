@@ -10,7 +10,7 @@ readHarmonizedGWASCatalogGRCh37 <- function(filename,type) {
   TwoSampleMR::format_data(
     dat=data.table::setDF(data.table::fread(filename)),
     type=type,
-    snp_col="variant_id",
+    snp_col="hm_rsid",
     beta_col="hm_beta",
     se_col="standard_error",
     eaf_col="hm_effect_allele_frequency",
@@ -18,8 +18,7 @@ readHarmonizedGWASCatalogGRCh37 <- function(filename,type) {
     other_allele_col="hm_other_allele",
     pval_col="p_value",
     chr_col="hm_chrom",
-    pos_col="hm_pos",
-    samplesize_col="n")
+    pos_col="hm_pos")
 }
 
 # datExp <- with(datExp, datExp[!is.na(SNP) & pval.exposure<1e-4,])
