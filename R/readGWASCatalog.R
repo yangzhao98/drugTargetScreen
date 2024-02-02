@@ -5,10 +5,10 @@
 #'
 #' @export
 
-readHarmonizedGWASCatalogGRCh37 <- function(filename,type,...) {
+readHarmonizedGWASCatalogGRCh37 <- function(filename,type) {
   type <- match.arg(type,c("exposure","outcome"))
   TwoSampleMR::format_data(
-    dat=data.table::setDF(data.table::fread(filename,...)),
+    dat=data.table::setDF(data.table::fread(filename)),
     type=type,
     snp_col="hm_rsid",
     beta_col="hm_beta",
@@ -21,6 +21,29 @@ readHarmonizedGWASCatalogGRCh37 <- function(filename,type,...) {
     pos_col="hm_pos")
 }
 
+
+#' @title read harmonized summary statistics in .txt format from GWAS Catalog
+#'
+#' @param filename location and file name of a specific data set
+#' @param type type of the data set, \code{type=c("exposure","outcome")}
+#'
+#' @export
+
+readHarmonizedGWASCatalogGRCh37Txt <- function(filename,type) {
+  type <- match.arg(type,c("exposure","outcome"))
+  TwoSampleMR::format_data(
+    dat=read.table(filename,header=TRUE),
+    type=type,
+    snp_col="hm_rsid",
+    beta_col="hm_beta",
+    se_col="standard_error",
+    eaf_col="hm_effect_allele_frequency",
+    effect_allele_col="hm_effect_allele",
+    other_allele_col="hm_other_allele",
+    pval_col="p_value",
+    chr_col="hm_chrom",
+    pos_col="hm_pos")
+}
 
 # datExp <- with(datExp, datExp[!is.na(SNP) & pval.exposure<1e-4,])
 
