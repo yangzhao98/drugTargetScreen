@@ -59,36 +59,41 @@ annotateGeneName <- function(rmNameformatDat,datGRCh) {
 #' @title clumping the data
 #'
 #' @param dat data frame with at least two columns names \code{c("SNP","pval.exposure")}
-#' @param plink_exe location of plink.exe. By default, \code{plink_exe=plinkbinr::get_plink_exe()}
 #' @param ldRef 1KG reference panel with .bed format
 #' @param clump_p1 p-value threshold for the index SNP. By default, \code{clump_p1=1}
 #' @param clump_p2 p-value threshold for the secondary SNP. By default, \code{clump_p2=1}
 #' @param clump_kb clumping window. By default, \code{clump_kb=10000}
 #' @param clump_r2 clumping r2 cutoff. By default, \code{clump_r2=0.001}
+#' @param threads number of threads used for plink
 #' @param tempdir temporal direct for storing plink data set
 #'
 #' @export
+# dat <- data.frame(rsid=c("rs941998198","rs908161677"),
+#                   pval=c(2.713e-08,2.501e-08))
+# ldRef <- "C:/PublicData/1KG_v3_OpenGWAS/EUR"
 plink_clump <- function(dat,
-                        plink_exe,
                         ldRef,
                         clump_kb = 10000,
                         clump_r2 = 0.001,
                         clump_p1 = 1,
                         clump_p2 = 1,
+                        threads = 36,
                         tempdir = "temp") {
   # Make textfile
   snps <- dat$SNP
-  if (!("pval" %in% colnames(dat))) dat$pval <- dat$pval.exposure
+  # if (!("pval" %in% colnames(dat)))
+  dat$pval <- dat$pval.exposure
   pvals <- pmin(1, dat$pval)
   dir.create(file.path(tempdir), showWarnings = FALSE)
 
   shell <- ifelse(Sys.info()['sysname'] == "Windows", "cmd", "sh")
   fn <- tempfile(tmpdir = tempdir)
-  data.table::fwrite(data.frame(SNP=snps, P=pvals), file=fn, row=F, col=T, qu=F, sep = " ")
+  data.table::fwrite(data.frame(SNP=snps, P=pvals),
+                     file=fn, row=F, col=T, qu=F, sep = " ")
 
   fun2 <- paste0(
     # shQuote(plink_exe),
-    plink_exe,
+    plinkbinr::get_plink_exe(),
     #  shQuote("plink"),
     #    " --bfile ", shQuote(refdat, type=shell),
     #    " --clump ", shQuote(fn, type=shell),
@@ -98,11 +103,17 @@ plink_clump <- function(dat,
     " --clump-p2 ", clump_p2,
     " --clump-r2 ", clump_r2,
     " --clump-kb ", clump_kb,
-    " --out ", shQuote(fn, type=shell)
+    " --out ", shQuote(fn, type=shell),
+    " --threads ", threads
   )
   system(fun2, ignore.stdout = T, ignore.stderr = T)
-  # a <- fread(paste(fn, ".clumped", sep=""), he=T)
-  a <- data.table::fread(paste(fn, sep=""), he=T)
+  a <- tryCatch({
+    data.table::fread(paste(fn, ".clumped", sep=""), he=T)
+  }, error=function(e) {
+    data.table::fread(paste(fn, sep=""), he=T)
+  }, warning=function(w) {
+    data.table::fread(paste(fn, sep=""), he=T)
+  })
   unlink(paste(fn, "*", sep=""))
   a <- a[, c(3, 5)]
   a$temp.p <- round(log10(a$P))
@@ -118,23 +129,50 @@ plink_clump <- function(dat,
 
 #' @title run ld clump locally
 #'
-#' @param formatDatExp data frame from \code{TwoSampleMR::format_data()} for exposure GWAS
+#' @param dat data frame from \code{TwoSampleMR::format_data()} for exposure GWAS
 #' @param ldRef 1KG refernce panel in plink format
-#'
+#' @param clump_p1 p-value threshold for the index SNP. By default, \code{clump_p1=1}
+#' @param clump_p2 p-value threshold for the secondary SNP. By default, \code{clump_p2=1}
+#' @param clump_kb clumping window. By default, \code{clump_kb=10000}
+#' @param clump_r2 clumping r2 cutoff. By default, \code{clump_r2=0.001}
+#' @param threads number of threads used for plink
+
 #' @export
-run_clump <- function(formatDatExp,ldRef) {
+run_clump <- function(dat,
+                      ldRef,
+                      clump_kb = 10000,
+                      clump_r2 = 0.001,
+                      clump_p1 = 5e-08,
+                      clump_p2 = 1,
+                      threads = 36) {
   SNP <- pval.exposure <- NULL
-  retain_snps <- formatDatExp %>%
-    dplyr::select(rsid=SNP,pval=pval.exposure) %>%
-    ieugwasr::ld_clump_local(
-      .,
-      bfile = ldRef,
-      clump_kb = 10000,
-      clump_r2 = 0.001,
-      clump_p = 5e-8,
-      plink_bin = plinkbinr::get_plink_exe()) %>%
-    {.$rsid}
-  datSel <- subset(formatDatExp, SNP %in% retain_snps)
-  return(datSel)
+  shell <- ifelse(Sys.info()["sysname"] == "Windows", "cmd", "sh")
+  fn <- tempfile()
+  utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval.exposure"]]),
+                     file = fn, row.names = F, col.names = T, quote = F)
+  fun2 <- paste0(shQuote(plinkbinr::get_plink_exe(), type = shell),
+                 " --bfile ", shQuote(ldRef, type = shell),
+                 " --clump ", shQuote(fn, type = shell),
+                 " --clump-p1 ", clump_p1,
+                 " --clump-p2 ", clump_p2,
+                 " --clump-r2 ", clump_r2,
+                 " --clump-kb ", clump_kb,
+                 " --out ", shQuote(fn, type = shell),
+                 " --threads ", threads)
+  system(fun2, ignore.stdout = T, ignore.stderr = T)
+  res <- tryCatch({
+    utils::read.table(paste(fn, ".clumped", sep = ""), header = T)
+  }, error=function(e) {
+    utils::read.table(paste(fn, sep = ""), header = T)
+  }, warning=function(w) {
+    utils::read.table(paste(fn, sep = ""), header = T)
+  })
+  unlink(paste(fn, "*", sep = ""))
+  y <- subset(dat, !dat[["SNP"]] %in% res[["SNP"]])
+  if (nrow(y) > 0) {
+    message("Removing ", length(y[["SNP"]]), " of ", nrow(dat),
+            " variants due to LD with other variants or absence from LD reference panel")
+  }
+  return(subset(dat, dat[["SNP"]] %in% res[["SNP"]]))
 }
 

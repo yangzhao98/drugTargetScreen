@@ -4,12 +4,30 @@
 \alias{run_clump}
 \title{run ld clump locally}
 \usage{
-run_clump(formatDatExp, ldRef)
+run_clump(
+  dat,
+  ldRef,
+  clump_kb = 10000,
+  clump_r2 = 0.001,
+  clump_p1 = 5e-08,
+  clump_p2 = 1,
+  threads = 36
+)
 }
 \arguments{
-\item{formatDatExp}{data frame from \code{TwoSampleMR::format_data()} for exposure GWAS}
+\item{dat}{data frame from \code{TwoSampleMR::format_data()} for exposure GWAS}
 
 \item{ldRef}{1KG refernce panel in plink format}
+
+\item{clump_kb}{clumping window. By default, \code{clump_kb=10000}}
+
+\item{clump_r2}{clumping r2 cutoff. By default, \code{clump_r2=0.001}}
+
+\item{clump_p1}{p-value threshold for the index SNP. By default, \code{clump_p1=1}}
+
+\item{clump_p2}{p-value threshold for the secondary SNP. By default, \code{clump_p2=1}}
+
+\item{threads}{number of threads used for plink}
 }
 \description{
 run ld clump locally

@@ -6,19 +6,17 @@
 \usage{
 plink_clump(
   dat,
-  plink_exe,
   ldRef,
   clump_kb = 10000,
   clump_r2 = 0.001,
   clump_p1 = 1,
   clump_p2 = 1,
+  threads = 36,
   tempdir = "temp"
 )
 }
 \arguments{
 \item{dat}{data frame with at least two columns names \code{c("SNP","pval.exposure")}}
-
-\item{plink_exe}{location of plink.exe. By default, \code{plink_exe=plinkbinr::get_plink_exe()}}
 
 \item{ldRef}{1KG reference panel with .bed format}
 
@@ -29,6 +27,8 @@ plink_clump(
 \item{clump_p1}{p-value threshold for the index SNP. By default, \code{clump_p1=1}}
 
 \item{clump_p2}{p-value threshold for the secondary SNP. By default, \code{clump_p2=1}}
+
+\item{threads}{number of threads used for plink}
 
 \item{tempdir}{temporal direct for storing plink data set}
 }
