@@ -84,7 +84,6 @@ plink_clump <- function(dat,
 
   shell <- ifelse(Sys.info()['sysname'] == "Windows", "cmd", "sh")
   fn <- tempfile(tmpdir = tempdir)
-  require(data.table)
   data.table::fwrite(data.frame(SNP=snps, P=pvals), file=fn, row=F, col=T, qu=F, sep = " ")
 
   fun2 <- paste0(
