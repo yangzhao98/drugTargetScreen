@@ -115,3 +115,26 @@ plink_clump <- function(dat,
 
   return(a)
 }
+
+#' @title run ld clump locally
+#'
+#' @param formatDatExp data frame from \code{TwoSampleMR::format_data()} for exposure GWAS
+#' @param ldRef 1KG refernce panel in plink format
+#'
+#' @export
+run_clump <- function(formatDatExp,ldRef) {
+  SNP <- pval.exposure <- NULL
+  retain_snps <- formatDatExp %>%
+    dplyr::select(rsid=SNP,pval=pval.exposure) %>%
+    ieugwasr::ld_clump_local(
+      .,
+      bfile = ldRef,
+      clump_kb = 10000,
+      clump_r2 = 0.001,
+      clump_p = 5e-8,
+      plink_bin = plinkbinr::get_plink_exe()) %>%
+    {.$rsid}
+  datSel <- subset(formatDatExp, SNP %in% retain_snps)
+  return(datSel)
+}
+
