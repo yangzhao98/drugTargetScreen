@@ -32,7 +32,7 @@ readHarmonizedGWASCatalogGRCh37 <- function(filename,type) {
 readHarmonizedGWASCatalogGRCh37Txt <- function(filename,type) {
   type <- match.arg(type,c("exposure","outcome"))
   TwoSampleMR::format_data(
-    dat=read.table(filename,header=TRUE),
+    dat=utils::read.table(filename,header=TRUE),
     type=type,
     snp_col="hm_rsid",
     beta_col="hm_beta",

@@ -221,14 +221,14 @@ runCisMR <- function(datExp,datMR,FDR.level=0.01) {
   ## volcano plot
   pltVolcano <- ggplot2::ggplot(data=datCisMRResult,
                        ggplot2::aes(x=b,y=-log10(as.numeric(pval)))) +
-    ggplot2::geom_jitter(aes(colour= factor(dir)),
+    ggplot2::geom_jitter(ggplot2::aes(colour= factor(dir)),
                 show.legend=FALSE) +
     ggrepel::geom_text_repel(
       data=datCisMRResult[datCisMRResult$idx==TRUE,],
       ggplot2::aes(label=GENCODE_name),box.padding=0.5,max.overlaps=Inf,
       min.segment.length=0) +
     ggsci::scale_color_jama() + ggsci::scale_fill_jama() +
-    ggplot2::geom_hline(aes(yintercept=-log10(FDR.level)),
+    ggplot2::geom_hline(ggplot2::aes(yintercept=-log10(FDR.level)),
                color="gray",linetype=2) +
     ggplot2::scale_x_continuous(name="log(OR)") +
     ggplot2::scale_y_continuous(name=expression("-log"[10]*"(p-value)")) +

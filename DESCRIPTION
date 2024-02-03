@@ -26,5 +26,6 @@ Imports:
     qvalue,
     stats,
     susieR,
-    TwoSampleMR
+    TwoSampleMR,
+    utils
 RoxygenNote: 7.2.3
