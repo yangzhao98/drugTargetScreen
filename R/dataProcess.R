@@ -65,7 +65,6 @@ annotateGeneName <- function(rmNameformatDat,datGRCh) {
 #' @param clump_p2 p-value threshold for the secondary SNP. By default, \code{clump_p2=1}
 #' @param clump_kb clumping window. By default, \code{clump_kb=10000}
 #' @param clump_r2 clumping r2 cutoff. By default, \code{clump_r2=0.001}
-#' @param numThreads number of threads used for clumping
 #' @param tempdir temporal direct for storing plink data set
 #'
 #' @export
@@ -76,7 +75,6 @@ plink_clump <- function(dat,
                         clump_r2 = 0.001,
                         clump_p1 = 1,
                         clump_p2 = 1,
-                        numThreads = 36,
                         tempdir = "temp") {
   # Make textfile
   snps <- dat$SNP
@@ -101,8 +99,7 @@ plink_clump <- function(dat,
     " --clump-p2 ", clump_p2,
     " --clump-r2 ", clump_r2,
     " --clump-kb ", clump_kb,
-    " --out ", shQuote(fn, type=shell),
-    " --threads ", numThreads
+    " --out ", shQuote(fn, type=shell)
   )
   system(fun2, ignore.stdout = T, ignore.stderr = T)
   # a <- fread(paste(fn, ".clumped", sep=""), he=T)

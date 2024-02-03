@@ -12,7 +12,6 @@ plink_clump(
   clump_r2 = 0.001,
   clump_p1 = 1,
   clump_p2 = 1,
-  numThreads = 36,
   tempdir = "temp"
 )
 }
@@ -30,8 +29,6 @@ plink_clump(
 \item{clump_p1}{p-value threshold for the index SNP. By default, \code{clump_p1=1}}
 
 \item{clump_p2}{p-value threshold for the secondary SNP. By default, \code{clump_p2=1}}
-
-\item{numThreads}{number of threads used for clumping}
 
 \item{tempdir}{temporal direct for storing plink data set}
 }
