@@ -17,7 +17,7 @@ run_clump(
 \arguments{
 \item{dat}{data frame from \code{TwoSampleMR::format_data()} for exposure GWAS}
 
-\item{ldRef}{1KG refernce panel in plink format}
+\item{ldRef}{1KG reference panel in plink format}
 
 \item{clump_kb}{clumping window. By default, \code{clump_kb=10000}}
 

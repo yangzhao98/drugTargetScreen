@@ -56,87 +56,16 @@ annotateGeneName <- function(rmNameformatDat,datGRCh) {
 }
 
 
-#' @title clumping the data
-#'
-#' @param dat data frame with at least two columns names \code{c("SNP","pval.exposure")}
-#' @param ldRef 1KG reference panel with .bed format
-#' @param clump_p1 p-value threshold for the index SNP. By default, \code{clump_p1=1}
-#' @param clump_p2 p-value threshold for the secondary SNP. By default, \code{clump_p2=1}
-#' @param clump_kb clumping window. By default, \code{clump_kb=10000}
-#' @param clump_r2 clumping r2 cutoff. By default, \code{clump_r2=0.001}
-#' @param threads number of threads used for plink
-#' @param tempdir temporal direct for storing plink data set
-#'
-#' @export
-# dat <- data.frame(rsid=c("rs941998198","rs908161677"),
-#                   pval=c(2.713e-08,2.501e-08))
-# ldRef <- "C:/PublicData/1KG_v3_OpenGWAS/EUR"
-plink_clump <- function(dat,
-                        ldRef,
-                        clump_kb = 10000,
-                        clump_r2 = 0.001,
-                        clump_p1 = 1,
-                        clump_p2 = 1,
-                        threads = 36,
-                        tempdir = "temp") {
-  # Make textfile
-  snps <- dat$SNP
-  # if (!("pval" %in% colnames(dat)))
-  dat$pval <- dat$pval.exposure
-  pvals <- pmin(1, dat$pval)
-  dir.create(file.path(tempdir), showWarnings = FALSE)
-
-  shell <- ifelse(Sys.info()['sysname'] == "Windows", "cmd", "sh")
-  fn <- tempfile(tmpdir = tempdir)
-  data.table::fwrite(data.frame(SNP=snps, P=pvals),
-                     file=fn, row=F, col=T, qu=F, sep = " ")
-
-  fun2 <- paste0(
-    # shQuote(plink_exe),
-    plinkbinr::get_plink_exe(),
-    #  shQuote("plink"),
-    #    " --bfile ", shQuote(refdat, type=shell),
-    #    " --clump ", shQuote(fn, type=shell),
-    " --bfile ", ldRef,
-    " --clump ", fn,
-    " --clump-p1 ", clump_p1,
-    " --clump-p2 ", clump_p2,
-    " --clump-r2 ", clump_r2,
-    " --clump-kb ", clump_kb,
-    " --out ", shQuote(fn, type=shell),
-    " --threads ", threads
-  )
-  system(fun2, ignore.stdout = T, ignore.stderr = T)
-  a <- tryCatch({
-    data.table::fread(paste(fn, ".clumped", sep=""), he=T)
-  }, error=function(e) {
-    data.table::fread(paste(fn, sep=""), he=T)
-  }, warning=function(w) {
-    data.table::fread(paste(fn, sep=""), he=T)
-  })
-  unlink(paste(fn, "*", sep=""))
-  a <- a[, c(3, 5)]
-  a$temp.p <- round(log10(a$P))
-  dat$temp.p <- round(log10(dat$pval))
-  a <- merge(a, dat, by = c("SNP", "temp.p"))
-
-  a <- a[, -(2:3)]
-
-  unlink(tempdir, recursive = T)
-
-  return(a)
-}
-
 #' @title run ld clump locally
 #'
 #' @param dat data frame from \code{TwoSampleMR::format_data()} for exposure GWAS
-#' @param ldRef 1KG refernce panel in plink format
+#' @param ldRef 1KG reference panel in plink format
 #' @param clump_p1 p-value threshold for the index SNP. By default, \code{clump_p1=1}
 #' @param clump_p2 p-value threshold for the secondary SNP. By default, \code{clump_p2=1}
 #' @param clump_kb clumping window. By default, \code{clump_kb=10000}
 #' @param clump_r2 clumping r2 cutoff. By default, \code{clump_r2=0.001}
 #' @param threads number of threads used for plink
-
+#'
 #' @export
 run_clump <- function(dat,
                       ldRef,
@@ -176,3 +105,27 @@ run_clump <- function(dat,
   return(subset(dat, dat[["SNP"]] %in% res[["SNP"]]))
 }
 
+#' @title Get annotated SNPs info
+#'
+#' @param dat data frame obtained from \code{TwoSampleMR::format_data()} for exposure GWAS
+#' @param datGRCh reference panel for gene annotation in either GRCh37 or GRCh38
+#' @param label label the trait or phenotype info
+#'
+#' @export
+getAnnotatedSNPs <- function(dat,datGRCh,label) {
+  ## formated exposure GWAS data using TwoSampleMR::format_data()
+  dat <- dat[,!names(dat) %in% c("pval_origin.exposure","id.exposure","exposure")]
+  dat$trait <- label
+  ## annotation
+  datGene <- drugTargetScreen::annotateGeneName(
+    drugTargetScreen::rmName4formatDat(dat=dat,label=label,pval=1),
+    datGRCh=datGRCh
+  )
+  datGene <- datGene[,c(1,5:10)]
+  ## merge data
+  datGene <- merge(dat, datGene,by="SNP")
+  names(datGene) <- gsub(".exposure","",names(datGene))
+  # names(datGene)[2:3] <- c("chr_GRCh37","pos_GRCh37")
+  datGene <- datGene[order(datGene$chr,datGene$pos),]
+  return(datGene)
+}

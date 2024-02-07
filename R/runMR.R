@@ -74,8 +74,9 @@ runDebiasedMR <- function(datMR) {
 #'
 #' @param datMR the harmonized data for MR analysis using TwoSampleMR::harmonise()
 #'
-#' @export
+#' @importFrom magrittr %>%
 #'
+#' @export
 runMRClust <- function(datMR) {
 
   rsid <- NULL
@@ -330,6 +331,9 @@ runMendelianRandomization <- function(datMRInput) {
 #' @param datGeneMR data frame with gene-level data from \code{TwoSampleMR::harmonised_data()}
 #' @param ldRef 1KG reference panel for getting LD matrices
 #' @param clump_r2 correlation in LD. By default, \code{clump_r2=0.2}
+#'
+#' @importFrom magrittr %>%
+#' @importFrom magrittr .
 #'
 #' @export
 runSuSiERMR <- function(datGeneMR,ldRef,clump_r2=0.2) {

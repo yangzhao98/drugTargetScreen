@@ -4,12 +4,7 @@
 \alias{pltManhattan}
 \title{plot Manhattan plot}
 \usage{
-pltManhattan(
-  datManhattan,
-  leadingSNPs,
-  filename,
-  type = c("circle", "manhattan")
-)
+pltManhattan(datManhattan, leadingSNPs, filename, type)
 }
 \arguments{
 \item{datManhattan}{data frame with the first three column being \code{c("SNP","Chromosome","Position")} with the following columns being \code{pval} for traits of interest}
@@ -18,7 +13,7 @@ pltManhattan(
 
 \item{filename}{location and name of the figure}
 
-\item{type}{the type of the Manhattan plot, with \code{type=c("circle","manhattan")}}
+\item{type}{the type of the Manhattan plot, with \code{type=c("c","m")}}
 }
 \description{
 plot Manhattan plot
