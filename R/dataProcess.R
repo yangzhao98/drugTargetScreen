@@ -129,3 +129,31 @@ getAnnotatedSNPs <- function(dat,datGRCh,label) {
   datGene <- datGene[order(datGene$chr,datGene$pos),]
   return(datGene)
 }
+
+#' @title Get LDmatrix for given SNPs concerning 1KG reference
+#'
+#' @param dat data frame from \code{TwoSampleMR::format_data()}
+#' @param ldRef location of 1KG reference panel
+#' @param pval pvalue threshold for selecting SNPs
+#'
+#' @export
+#'
+getLDmatrix <- function(dat,ldRef,pval) {
+  names(dat) <- gsub(".exposure","",names(dat))
+  names(dat) <- gsub(".outcome","",names(dat))
+  ldMatrix <- ieugwasr::ld_matrix_local(
+    variants = dat$SNP[dat$pval<pval],
+    bfile = ldRef,
+    plink_bin = plinkbinr::get_plink_exe()
+  )
+  snp_list <- unlist(lapply(
+    row.names(ldMatrix),
+    FUN=function(i) {
+      strsplit(i,"_")[[1]][1]
+    }))
+  dat <- dat[dat$SNP %in% snp_list,]
+  idx <- unlist(lapply(snp_list, FUN=function(i) which(dat$SNP %in% i)))
+  dat <- dat[idx,]
+  return(list(LDmatrix=ldMatrix,dat=dat))
+}
+
