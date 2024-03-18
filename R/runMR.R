@@ -244,7 +244,7 @@ runCisMR <- function(datExp,datMR,FDR.level=0.01) {
 #' @title run Gene-based MR analyses with correlated IVs
 #'
 #' @param datMR data frame from \code{TwoSampleMR::harmonised_data()}
-#' @param ldRef !KG reference panel for getting LD matrices
+#' @param ldRef 1KG reference panel for getting LD matrices
 #' @param pval threshold for selecting IVs at p-value
 #' @param corr \code{corr=c(TRUE,FALSE)} indicator of inclusion of correlated IVs or not
 #'

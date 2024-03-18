@@ -150,7 +150,7 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
   fn <- tempfile()
   utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval.exposure"]]),
                      file = fn, row.names = F, col.names = T, quote = F)
-  fun1 <- paste0(shQuote(plink_bin, type = shell),
+  fun1 <- paste0(shQuote(plinkbinr::get_plink_exe(), type = shell),
                  " --bfile ", shQuote(bfile, type = shell),
                  " --extract ", shQuote(fn, type = shell),
                  " --make-just-bim ",
@@ -159,7 +159,7 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
                  " --threads ", threads)
   system(fun1)
   bim <- utils::read.table(paste0(fn, ".bim"), stringsAsFactors = FALSE)
-  fun2 <- paste0(shQuote(plink_bin, type = shell),
+  fun2 <- paste0(shQuote(plinkbinr::get_plink_exe(), type = shell),
                  " --bfile ", shQuote(bfile, type = shell),
                  " --extract ", shQuote(fn, type = shell),
                  " --r square ",
