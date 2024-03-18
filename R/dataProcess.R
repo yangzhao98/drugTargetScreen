@@ -157,3 +157,66 @@ getLDmatrix <- function(dat,ldRef,pval) {
   return(list(LDmatrix=ldMatrix,dat=dat))
 }
 
+
+
+
+#' @title remove ".exposure" and ".outcome" from a data frame
+#'
+#' @param dat GWAS summary statistics from \code{TwoSampleMR::format_data()}
+#'
+#' @export
+rnDat <- function(dat) {
+  names(dat) <- gsub(".exposure","",names(dat))
+  names(dat) <- gsub(".outcome","",names(dat))
+  return(dat)
+}
+
+
+#' @title calculate number of the overlapped SNPs between two traits given a pval threshold
+#'
+#' @param dat1 GWAS summary statistics from \code{TwoSampleMR::format_data()} for trait 1
+#' @param dat2 GWAS summary statistics from \code{TwoSampleMR::format_data()} for trait 2
+#' @param pval pvalue threshod for selecting the overlapped SNPs
+#'
+#' @export
+checkSNPsOverlap <- function(dat1,dat2,pval) {
+  dat1 <- rnDat(dat1)
+  dat2 <- rnDat(dat2)
+  snps <- intersect(dat1$SNP[dat1$pval<pval],dat2$SNP[dat2$pval<pval])
+  return(list(nSNPs=length(snps),SNPs=snps))
+}
+
+#' @title get the overlapped SNPs between two traits for colocalization analyses
+#'
+#' @param dat1 GWAS summary statistics from \code{TwoSampleMR::format_data()} for trait1
+#' @param trait1 trait name for dat1
+#' @param dat2 GWAS summary statistics from \code{TwoSAmpleMR::format_data()} for trait2
+#' @param trait2 trait name for dat2
+#' @param ldRef 1KG reference panel in plink format
+#' @param pval pvalue threshold for selecting SNPs with \code{pvalue<pval}
+#'
+#' @export
+getOverlapSNPs <- function(dat1,trait1,dat2,trait2,ldRef,pval) {
+  ## Strategy for getting overlapped SNPs
+  # (1) preliminary check the overlapped SNPs between trait1 and trait2
+  # (2) check the overlapped SNPs in 1KG reference and get LDmatrix
+  # (3) select the overlapped SNPs in trait1, trait2, and 1KG reference panel
+  dat1 <- rnDat(dat1)
+  dat2 <- rnDat(dat2)
+  SNPs <- checkSNPsOverlap(dat1=dat1,dat2=dat2,pval=pval)
+  ## Check SNPs in 1KG reference
+  dat1 <- drugTargetScreen::getLDmatrix(dat1[dat1$SNP %in% SNPs$SNPs,],ldRef=ldRef,pval=pval)
+  dat2 <- drugTargetScreen::getLDmatrix(dat2[dat2$SNP %in% SNPs$SNPs,],ldRef=ldRef,pval=pval)
+  snps <- intersect(dat1$dat$SNP,dat2$dat$SNP)
+  ## Get the overlapp SNPs
+  dat1$dat <- dat1$dat[dat1$dat$SNP %in% snps,]
+  rownames(dat1$LDmatrix) <- unlist(lapply(rownames(dat1$LDmatrix),FUN=function(x) strsplit(x,"_")[[1]][1]))
+  colnames(dat1$LDmatrix) <- unlist(lapply(colnames(dat1$LDmatrix),FUN=function(x) strsplit(x,"_")[[1]][1]))
+  dat1$LDmatrix <- dat1$LDmatrix[rownames(dat1$LDmatrix) %in% snps,colnames(dat1$LDmatrix) %in% snps]
+  dat2$dat <- dat2$dat[dat2$dat$SNP %in% snps,]
+  rownames(dat2$LDmatrix) <- unlist(lapply(rownames(dat2$LDmatrix),FUN=function(x) strsplit(x,"_")[[1]][1]))
+  colnames(dat2$LDmatrix) <- unlist(lapply(colnames(dat2$LDmatrix),FUN=function(x) strsplit(x,"_")[[1]][1]))
+  dat2$LDmatrix <- dat2$LDmatrix[rownames(dat2$LDmatrix) %in% snps,colnames(dat2$LDmatrix) %in% snps]
+  ## Get the overlapp LDmatrix
+  return(stats::setNames(list(dat1,dat2),c(trait1,trait2)))
+}
