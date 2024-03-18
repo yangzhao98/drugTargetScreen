@@ -132,32 +132,58 @@ getAnnotatedSNPs <- function(dat,datGRCh,label) {
 
 #' @title Get LDmatrix for given SNPs concerning 1KG reference
 #'
-#' @param dat data frame from \code{TwoSampleMR::format_data()}
+#' @param dat data frame from \code{TwoSampleMR::format_data()} for exposure GWAS
 #' @param ldRef location of 1KG reference panel
 #' @param pval pvalue threshold for selecting SNPs
+#' @param threads number of threads used for plink
+#' @param withAlleles indicator of whether LD matrix includes effect and other alleles
 #'
 #' @export
 #'
-getLDmatrix <- function(dat,ldRef,pval) {
-  names(dat) <- gsub(".exposure","",names(dat))
-  names(dat) <- gsub(".outcome","",names(dat))
-  ldMatrix <- ieugwasr::ld_matrix_local(
-    variants = dat$SNP[dat$pval<pval],
-    bfile = ldRef,
-    plink_bin = plinkbinr::get_plink_exe()
-  )
-  snp_list <- unlist(lapply(
-    row.names(ldMatrix),
-    FUN=function(i) {
-      strsplit(i,"_")[[1]][1]
-    }))
+getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
+  # ldMatrix <- ieugwasr::ld_matrix_local(
+  #   variants = dat$SNP[dat$pval<pval],
+  #   bfile = ldRef,
+  #   plink_bin = plinkbinr::get_plink_exe()
+  # )
+  shell <- ifelse(Sys.info()["sysname"] == "Windows", "cmd", "sh")
+  fn <- tempfile()
+  utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval.exposure"]]),
+                     file = fn, row.names = F, col.names = T, quote = F)
+  fun1 <- paste0(shQuote(plink_bin, type = shell),
+                 " --bfile ", shQuote(bfile, type = shell),
+                 " --extract ", shQuote(fn, type = shell),
+                 " --make-just-bim ",
+                 " --keep-allele-order ",
+                 " --out ", shQuote(fn, type = shell),
+                 " --threads ", threads)
+  system(fun1)
+  bim <- utils::read.table(paste0(fn, ".bim"), stringsAsFactors = FALSE)
+  fun2 <- paste0(shQuote(plink_bin, type = shell),
+                 " --bfile ", shQuote(bfile, type = shell),
+                 " --extract ", shQuote(fn, type = shell),
+                 " --r square ",
+                 " --keep-allele-order ",
+                 " --out ", shQuote(fn, type = shell),
+                 " --threads ", threads)
+  system(fun2)
+  ldMatrix <- utils::read.table(paste0(fn, ".ld"), header = FALSE) %>% as.matrix
+  snp_list <- row.names(ldMatrix)
+  if (withAlleles) {
+    rownames(ldMatrix)<-colnames(ldMatrix)<-paste(bim$V2,bim$V5,bim$V6,sep="_")
+  } else {
+    rownames(ldMatrix) <- colnames(ldMatrix) <- bim$V2
+  }
+  # snp_list <- unlist(lapply(
+  #   row.names(ldMatrix),
+  #   FUN=function(i) {
+  #     strsplit(i,"_")[[1]][1]
+  #   }))
   dat <- dat[dat$SNP %in% snp_list,]
   idx <- unlist(lapply(snp_list, FUN=function(i) which(dat$SNP %in% i)))
   dat <- dat[idx,]
   return(list(LDmatrix=ldMatrix,dat=dat))
 }
-
-
 
 
 #' @title remove ".exposure" and ".outcome" from a data frame

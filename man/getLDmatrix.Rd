@@ -4,14 +4,18 @@
 \alias{getLDmatrix}
 \title{Get LDmatrix for given SNPs concerning 1KG reference}
 \usage{
-getLDmatrix(dat, ldRef, pval)
+getLDmatrix(dat, ldRef, pval, threads = 36, withAlleles = TRUE)
 }
 \arguments{
-\item{dat}{data frame from \code{TwoSampleMR::format_data()}}
+\item{dat}{data frame from \code{TwoSampleMR::format_data()} for exposure GWAS}
 
 \item{ldRef}{location of 1KG reference panel}
 
 \item{pval}{pvalue threshold for selecting SNPs}
+
+\item{threads}{number of threads used for plink}
+
+\item{withAlleles}{indicator of whether LD matrix includes effect and other alleles}
 }
 \description{
 Get LDmatrix for given SNPs concerning 1KG reference

@@ -2,7 +2,7 @@
 
   # CRAN Note avoidance
   if (getRversion() >= "3.1.0")
-    utils::globalVariables(c("%>%", "."))
+    utils::globalVariables(c("%>%", ".", "bfile", "plink_bin"))
   invisible()
 
 }
