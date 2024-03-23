@@ -167,7 +167,7 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
                  " --out ", shQuote(fn, type = shell),
                  " --threads ", threads)
   system(fun2)
-  ldMatrix <- utils::read.table(paste0(fn, ".ld"), header = FALSE) %>% as.matrix()
+  ldMatrix <- utils::read.table(paste0(fn, ".ld"), header = FALSE)
   snp_list <- bim$V2
   if (withAlleles) {
     rownames(ldMatrix)<-colnames(ldMatrix)<-paste(bim$V2,bim$V5,bim$V6,sep="_")
@@ -186,13 +186,13 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
 }
 
 
-# run_SuSiE <- function(dat,ldRef,pval,nSampleSize,threads=36) {
+# run_SuSiE <- function(dat,ldRef,pval,nSampleSize,gene,threads=36) {
 #   ## get LD matrix
 #   datTmp <- getLDmatrix(dat=dat,ldRef=ldRef,pval=pval,threads=threads)
 #   ## calculate the z-score for fine-mapping
-#   dat$zscore <- with(datGeneMR,beta.exposure/se.exposure)
+#   datTmp$dat$zscore <- with(datTmp$dat,beta.exposure/se.exposure)
 #   fittedSuSiE <- with(
-#     datGeneMR,
+#     datTmp$dat,
 #     susieR::susie_rss(z=zscore,
 #                       R=ldMatrix,
 #                       L=10,n=nSampleSize,
