@@ -9,7 +9,7 @@ runGeneMendelianRandomization(datMR, ldRef, pval = 1e-04, corr = TRUE)
 \arguments{
 \item{datMR}{data frame from \code{TwoSampleMR::harmonised_data()}}
 
-\item{ldRef}{!KG reference panel for getting LD matrices}
+\item{ldRef}{1KG reference panel for getting LD matrices}
 
 \item{pval}{threshold for selecting IVs at p-value}
 

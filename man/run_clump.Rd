@@ -7,7 +7,7 @@
 run_clump(
   dat,
   ldRef,
-  clump_kb = 10000,
+  clump_kb = 1000,
   clump_r2 = 0.001,
   clump_p1 = 5e-08,
   clump_p2 = 1,
@@ -19,7 +19,7 @@ run_clump(
 
 \item{ldRef}{1KG reference panel in plink format}
 
-\item{clump_kb}{clumping window. By default, \code{clump_kb=10000}}
+\item{clump_kb}{clumping window. By default, \code{clump_kb=1000}}
 
 \item{clump_r2}{clumping r2 cutoff. By default, \code{clump_r2=0.001}}
 

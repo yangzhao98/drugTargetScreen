@@ -62,14 +62,14 @@ annotateGeneName <- function(rmNameformatDat,datGRCh) {
 #' @param ldRef 1KG reference panel in plink format
 #' @param clump_p1 p-value threshold for the index SNP. By default, \code{clump_p1=1}
 #' @param clump_p2 p-value threshold for the secondary SNP. By default, \code{clump_p2=1}
-#' @param clump_kb clumping window. By default, \code{clump_kb=10000}
+#' @param clump_kb clumping window. By default, \code{clump_kb=1000}
 #' @param clump_r2 clumping r2 cutoff. By default, \code{clump_r2=0.001}
 #' @param threads number of threads used for plink
 #'
 #' @export
 run_clump <- function(dat,
                       ldRef,
-                      clump_kb = 10000,
+                      clump_kb = 1000,
                       clump_r2 = 0.001,
                       clump_p1 = 5e-08,
                       clump_p2 = 1,
@@ -151,7 +151,7 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
   utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval.exposure"]]),
                      file = fn, row.names = F, col.names = T, quote = F)
   fun1 <- paste0(shQuote(plinkbinr::get_plink_exe(), type = shell),
-                 " --bfile ", shQuote(bfile, type = shell),
+                 " --bfile ", shQuote(ldRef, type = shell),
                  " --extract ", shQuote(fn, type = shell),
                  " --make-just-bim ",
                  " --keep-allele-order ",
@@ -167,8 +167,8 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
                  " --out ", shQuote(fn, type = shell),
                  " --threads ", threads)
   system(fun2)
-  ldMatrix <- utils::read.table(paste0(fn, ".ld"), header = FALSE) %>% as.matrix
-  snp_list <- row.names(ldMatrix)
+  ldMatrix <- utils::read.table(paste0(fn, ".ld"), header = FALSE) %>% as.matrix()
+  snp_list <- bim$V2
   if (withAlleles) {
     rownames(ldMatrix)<-colnames(ldMatrix)<-paste(bim$V2,bim$V5,bim$V6,sep="_")
   } else {
@@ -183,6 +183,36 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
   idx <- unlist(lapply(snp_list, FUN=function(i) which(dat$SNP %in% i)))
   dat <- dat[idx,]
   return(list(LDmatrix=ldMatrix,dat=dat))
+}
+
+
+run_SuSiE <- function(dat,ldMatrix,nSampleSize,xlabel) {
+  ## calculate the z-score for fine-mapping
+  dat$zscore <- with(datGeneMR,beta.exposure/se.exposure)
+  fittedSuSiE <- with(
+    datGeneMR,
+    susieR::susie_rss(z=zscore,
+                      R=ldMatrix,
+                      L=10,n=nSampleSize,
+                      estimate_residual_variance=TRUE,
+                      estimate_prior_variance=TRUE))
+  calPIP <- summary(fittedSuSiE)$vars
+  selectedSNPs <- sort(calPIP$variable[calPIP$cs>0])
+
+  # susieR::susie_plot(fittedSuSiE, y="PIP",
+  #                    b=datGeneStat$beta.exposure[1:00],
+  #                    xlab=paste(uniprot_gn_symbol,
+  #                               " (Chr",
+  #                               datCodingGene$chrpos[datCodingGene$uniprot_gn_symbol==uniprot_gn_symbol][1],
+  #                               ")",sep=""))
+  #
+  # gaston::LD.plot(ldSNP,snp.positions=datGeneStat$pos.exposure,
+  #                 polygon.par = list(border = NA),
+  #                 write.ld = NULL)
+
+  return(list(PIPs=calPIP,credibleSet=selectedSNPs, ## fine-mapping outputs
+              datMR=datMR,ldSNP=ldSNP,              ## data set for MR
+              datMRResult=datMRResult))             ## MR results with correlated IVs
 }
 
 

@@ -344,7 +344,7 @@ runSuSiERMR <- function(datGeneMR,ldRef,clump_r2=0.2) {
     ieugwasr::ld_clump_local(
       .,
       bfile = ldRef,
-      clump_kb = 10000,
+      clump_kb = 1000,
       clump_r2 = clump_r2,
       clump_p = 5e-8,
       plink_bin = plinkbinr::get_plink_exe()) %>%
