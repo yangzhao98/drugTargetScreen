@@ -186,34 +186,36 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
 }
 
 
-run_SuSiE <- function(dat,ldMatrix,nSampleSize,xlabel) {
-  ## calculate the z-score for fine-mapping
-  dat$zscore <- with(datGeneMR,beta.exposure/se.exposure)
-  fittedSuSiE <- with(
-    datGeneMR,
-    susieR::susie_rss(z=zscore,
-                      R=ldMatrix,
-                      L=10,n=nSampleSize,
-                      estimate_residual_variance=TRUE,
-                      estimate_prior_variance=TRUE))
-  calPIP <- summary(fittedSuSiE)$vars
-  selectedSNPs <- sort(calPIP$variable[calPIP$cs>0])
-
-  # susieR::susie_plot(fittedSuSiE, y="PIP",
-  #                    b=datGeneStat$beta.exposure[1:00],
-  #                    xlab=paste(uniprot_gn_symbol,
-  #                               " (Chr",
-  #                               datCodingGene$chrpos[datCodingGene$uniprot_gn_symbol==uniprot_gn_symbol][1],
-  #                               ")",sep=""))
-  #
-  # gaston::LD.plot(ldSNP,snp.positions=datGeneStat$pos.exposure,
-  #                 polygon.par = list(border = NA),
-  #                 write.ld = NULL)
-
-  return(list(PIPs=calPIP,credibleSet=selectedSNPs, ## fine-mapping outputs
-              datMR=datMR,ldSNP=ldSNP,              ## data set for MR
-              datMRResult=datMRResult))             ## MR results with correlated IVs
-}
+# run_SuSiE <- function(dat,ldRef,pval,nSampleSize,threads=36) {
+#   ## get LD matrix
+#   datTmp <- getLDmatrix(dat=dat,ldRef=ldRef,pval=pval,threads=threads)
+#   ## calculate the z-score for fine-mapping
+#   dat$zscore <- with(datGeneMR,beta.exposure/se.exposure)
+#   fittedSuSiE <- with(
+#     datGeneMR,
+#     susieR::susie_rss(z=zscore,
+#                       R=ldMatrix,
+#                       L=10,n=nSampleSize,
+#                       estimate_residual_variance=TRUE,
+#                       estimate_prior_variance=TRUE))
+#   calPIP <- summary(fittedSuSiE)$vars
+#   selectedSNPs <- sort(calPIP$variable[calPIP$cs>0])
+#
+#   # susieR::susie_plot(fittedSuSiE, y="PIP",
+#   #                    b=datGeneStat$beta.exposure[1:00],
+#   #                    xlab=paste(uniprot_gn_symbol,
+#   #                               " (Chr",
+#   #                               datCodingGene$chrpos[datCodingGene$uniprot_gn_symbol==uniprot_gn_symbol][1],
+#   #                               ")",sep=""))
+#   #
+#   # gaston::LD.plot(ldSNP,snp.positions=datGeneStat$pos.exposure,
+#   #                 polygon.par = list(border = NA),
+#   #                 write.ld = NULL)
+#
+#   return(list(PIPs=calPIP,credibleSet=selectedSNPs, ## fine-mapping outputs
+#               datMR=datMR,ldSNP=ldSNP,              ## data set for MR
+#               datMRResult=datMRResult))             ## MR results with correlated IVs
+# }
 
 
 #' @title remove ".exposure" and ".outcome" from a data frame
