@@ -12,6 +12,7 @@ Imports:
     CMplot,
     data.table,
     dplyr,
+    gaston,
     ggplot2,
     ggrepel,
     ggsci,

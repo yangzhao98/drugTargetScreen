@@ -167,7 +167,7 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
                  " --out ", shQuote(fn, type = shell),
                  " --threads ", threads)
   system(fun2)
-  ldMatrix <- utils::read.table(paste0(fn, ".ld"), header = FALSE)
+  ldMatrix <- as.matrix(utils::read.table(paste0(fn, ".ld"), header = FALSE))
   snp_list <- bim$V2
   if (withAlleles) {
     rownames(ldMatrix)<-colnames(ldMatrix)<-paste(bim$V2,bim$V5,bim$V6,sep="_")
@@ -186,36 +186,49 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
 }
 
 
-# run_SuSiE <- function(dat,ldRef,pval,nSampleSize,gene,threads=36) {
-#   ## get LD matrix
-#   datTmp <- getLDmatrix(dat=dat,ldRef=ldRef,pval=pval,threads=threads)
-#   ## calculate the z-score for fine-mapping
-#   datTmp$dat$zscore <- with(datTmp$dat,beta.exposure/se.exposure)
-#   fittedSuSiE <- with(
-#     datTmp$dat,
-#     susieR::susie_rss(z=zscore,
-#                       R=ldMatrix,
-#                       L=10,n=nSampleSize,
-#                       estimate_residual_variance=TRUE,
-#                       estimate_prior_variance=TRUE))
-#   calPIP <- summary(fittedSuSiE)$vars
-#   selectedSNPs <- sort(calPIP$variable[calPIP$cs>0])
-#
-#   # susieR::susie_plot(fittedSuSiE, y="PIP",
-#   #                    b=datGeneStat$beta.exposure[1:00],
-#   #                    xlab=paste(uniprot_gn_symbol,
-#   #                               " (Chr",
-#   #                               datCodingGene$chrpos[datCodingGene$uniprot_gn_symbol==uniprot_gn_symbol][1],
-#   #                               ")",sep=""))
-#   #
-#   # gaston::LD.plot(ldSNP,snp.positions=datGeneStat$pos.exposure,
-#   #                 polygon.par = list(border = NA),
-#   #                 write.ld = NULL)
-#
-#   return(list(PIPs=calPIP,credibleSet=selectedSNPs, ## fine-mapping outputs
-#               datMR=datMR,ldSNP=ldSNP,              ## data set for MR
-#               datMRResult=datMRResult))             ## MR results with correlated IVs
-# }
+#' @title Implement the fine-mapping analysis using SuSiE method
+#'
+#' @param dat data frame from \code{TwoSampleMR::format_data()} for exposure GWAS
+#' @param ldRef location of 1KG reference panel
+#' @param pval pvalue threshold for selecting SNPs
+#' @param nSampleSize sample size of the exposure GWAS
+#' @param threads number of threads used for plink
+#' @param withAlleles indicator of whether LD matrix includes effect and other alleles
+#'
+#' @export
+#'
+run_SuSiE <- function(dat,ldRef,pval,nSampleSize,threads,withAlleles=TRUE) {
+  # get LD matrix for PSCK9 gene
+  datTmp <- getLDmatrix(dat=dat,ldRef=ldRef,pval=pval,
+                        threads=threads,withAlleles=withAlleles)
+  # calc the z-score
+  datTmp$dat$zscore <- with(datTmp$dat,beta.exposure/se.exposure)
+  # run SuSiE
+  fittedSuSiE <- with(
+    datTmp$dat,
+    susieR::susie_rss(z=zscore,R=datTmp$LDmatrix,L=10,
+                      n=nSampleSize,estimate_residual_variance=TRUE))
+  calPIP <- summary(fittedSuSiE)$vars
+  selectedSNPidx <- sort(calPIP$variable[calPIP$cs>0])
+  # plot the regional plot
+  pltSuSiE <- susieR::susie_plot(
+    fittedSuSiE,y="PIP",
+    b=datTmp$dat$beta.exposure,
+    xlab="PCSK9")
+  # plot the LD plot
+  pltLD <- gaston::LD.plot(
+    datTmp$LDmatrix,
+    snp.positions=datTmp$dat$pos.exposure,
+    polygon.par = list(border = NA),
+    write.ld = NULL)
+
+  return(list(dat=datTmp$dat,LDmatrix=datTmp$LDmatrix,
+              selectedSNPs=datTmp$dat$SNP[selectedSNPidx],
+              pltSuSiE=pltSuSiE,
+              pltLD=pltLD))
+
+}
+
 
 
 #' @title remove ".exposure" and ".outcome" from a data frame
