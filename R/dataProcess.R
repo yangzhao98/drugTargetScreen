@@ -160,7 +160,7 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
   system(fun1)
   bim <- utils::read.table(paste0(fn, ".bim"), stringsAsFactors = FALSE)
   fun2 <- paste0(shQuote(plinkbinr::get_plink_exe(), type = shell),
-                 " --bfile ", shQuote(bfile, type = shell),
+                 " --bfile ", shQuote(ldRef, type = shell),
                  " --extract ", shQuote(fn, type = shell),
                  " --r square ",
                  " --keep-allele-order ",
