@@ -126,38 +126,38 @@ runMRClust <- function(datMR) {
       ggplot2::ylab(datMRClust$outcome[1]))
 
 
-  # search for traits associated with clusters of variants using PhenoScanner v2
-  datMRClust.PhenoScanner <- with(
-    datMRClust,
-    tryCatch({
-      phenoscanner::phenoscanner(snpquery=SNP,
-                                 catalogue="GWAS",
-                                 pvalue=5e-8,
-                                 proxies="None",
-                                 r2=0.8,
-                                 build=37)
-    }, error=function(e) {
-      phenoscanner::phenoscanner(snpquery=SNP,
-                                 catalogue="GWAS",
-                                 pvalue=5e-8,
-                                 proxies="None",
-                                 r2=0.8,
-                                 build=37)
-    }))
-
-  datMRClust.PheWAS <- datMRClust.PhenoScanner$results %>%
-    dplyr::select(-rsid) %>%
-    dplyr::left_join(datMRClust.PhenoScanner$snps[
-      ,c("snp","afr","amr","eas","eur","sas","consequence",
-         "protein_position","amino_acids","ensembl","hgnc")],
-      by="snp") %>%
-    dplyr::left_join(datMRClust.best[
-      ,c("observation","cluster","probability")],
-      by=c("snp"="observation"))
+  # # search for traits associated with clusters of variants using PhenoScanner v2
+  # datMRClust.PhenoScanner <- with(
+  #   datMRClust,
+  #   tryCatch({
+  #     phenoscanner::phenoscanner(snpquery=SNP,
+  #                                catalogue="GWAS",
+  #                                pvalue=5e-8,
+  #                                proxies="None",
+  #                                r2=0.8,
+  #                                build=37)
+  #   }, error=function(e) {
+  #     phenoscanner::phenoscanner(snpquery=SNP,
+  #                                catalogue="GWAS",
+  #                                pvalue=5e-8,
+  #                                proxies="None",
+  #                                r2=0.8,
+  #                                build=37)
+  #   }))
+  #
+  # datMRClust.PheWAS <- datMRClust.PhenoScanner$results %>%
+  #   dplyr::select(-rsid) %>%
+  #   dplyr::left_join(datMRClust.PhenoScanner$snps[
+  #     ,c("snp","afr","amr","eas","eur","sas","consequence",
+  #        "protein_position","amino_acids","ensembl","hgnc")],
+  #     by="snp") %>%
+  #   dplyr::left_join(datMRClust.best[
+  #     ,c("observation","cluster","probability")],
+  #     by=c("snp"="observation"))
 
   return(list(datMRClust.all=datMRClust.Result$results$all,
               datMRClust.best=datMRClust.best,
-              datMRClust.PheWAS=datMRClust.PheWAS,
+              # datMRClust.PheWAS=datMRClust.PheWAS,
               pltScatter=pltScatter,
               pltScatterProb08.2IVs=pltScatterProb08.2IVs))
 
