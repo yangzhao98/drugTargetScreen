@@ -291,3 +291,65 @@ getOverlapSNPs <- function(dat1,trait1,dat2,trait2,ldRef,pval) {
   ## Get the overlapp LDmatrix
   return(stats::setNames(list(dat1,dat2),c(trait1,trait2)))
 }
+
+
+#' @title prepare data for implementing MR-GRAPPLE
+#' @param dat formated exposue- or outcome-GWAS using TwoSampleMR::format_data()
+#' @export
+dat4GRAPPLE <- function(dat) {
+  names(dat) <- gsub(".exposure","",names(dat))
+  names(dat) <- gsub(".outcome","",names(dat))
+  chkCols <- c("SNP","effect_allele","other_allele","beta","se","pval")
+  if (length(match.arg(names(dat),chkCols,several.ok=TRUE))!=6) {
+    stop(paste("Please check the input data with at least \n",chkCols,sep=""))
+  }
+  return(dat)
+}
+
+#' @title data processing for UKB-Neale Labs GWAS summary statistics
+#' @param UKBGWAS.file path of the GWAS summary statistics
+#' @param datUKBSNP processed variants info obtained from variants.tsv.gz with \code{c("variant","rsid","consequence","consequence_category")}
+#' @param type the type of exposure- or outcome- GWAS processed using \code{TwoSampleMR::format_data()}
+#' @export
+dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
+  ## Variants info
+  # selCols <- c("variant","rsid","consequence","consequence_category")
+  # datUKBSNP <- data.table::fread(UKBSNP.file,select=selCols)
+  ## GWAS info
+  datUKBGWAS <- data.table::fread(UKBGWAS.file)
+  datUKBGWAS <- datUKBGWAS[datUKBGWAS$low_confidence_variant==FALSE,]
+  ## log(OR) transformation from BOLT-LMM binary trait analysis
+  logORTransformation <- function(beta,nCase,nTot) {
+    u <- nCase/nTot
+    beta/(u*(1-u))
+  }
+  ##
+  datUKBGWAS <- merge(datUKBGWAS,datUKBSNP,by="variant",all.x=TRUE)
+  datUKBGWAS[
+    ,`:=`(chr=strsplit(variant,":")[[1]][1],
+          pos=strsplit(variant,":")[[1]][2],
+          ea=strsplit(variant,":")[[1]][3],
+          ra=strsplit(variant,":")[[1]][4],
+          nCase=ceiling(expected_case_minor_AC/(2*minor_AF)))
+    ,by=.(variant)
+  ]
+  datUKBGWAS[,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
+                   eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
+                   other_allele=ifelse(ea==minor_allele,ra,ea),
+                   betaNew=logORTransformation(beta,nCase,n_complete_samples),
+                   seNew=logORTransformation(se,nCase,n_complete_samples)),
+             ,by=.(variant)
+  ]
+
+  datUKBGWAS <- TwoSampleMR::format_data(
+    dat=as.data.frame(datUKBGWAS),
+    type=type,
+    snp_col="rsid",beta_col="betaNew",se_col="seNew",pval_col="pval",
+    effect_allele_col="effect_allele",
+    other_allele_col="other_allele",
+    eaf_col="eaf",
+    chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples"
+  )
+  datUKBGWAS <- datUKBGWAS[!is.na(datUKBGWAS$SNP),]
+  return(datUKBGWAS)
+}

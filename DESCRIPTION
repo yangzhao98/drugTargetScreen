@@ -16,6 +16,8 @@ Imports:
     ggplot2,
     ggrepel,
     ggsci,
+    GRAPPLE,
+    grDevices,
     ieugwasr,
     MendelianRandomization,
     mr.divw,

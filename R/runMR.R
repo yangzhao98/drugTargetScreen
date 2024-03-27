@@ -405,5 +405,71 @@ runSuSiERMR <- function(datGeneMR,ldRef,clump_r2=0.2) {
 
 }
 
+#' @title run three-sample MR using MR-GRAPPLE
+#' @param selGWAS.file dataset with selection GWAS summary statistics
+#' @param expGWAS.file dataset with exposure GWAS summary statistics
+#' @param outGWAS.file dataset with outcome GWAS summary statistics
+#' @param pval threshold of p-value for SNPs selection
+#' @param ldRef location of ld reference panel
+#' @param clump_r2 the r2 used for clumping
+#' @param outPath the path for saving figures generated from MR-GRAPPLE
+#' @export
+runGRAPPLE <- function(selGWAS.file,expGWAS.file,outGWAS.file,pval,ldRef,clump_r2=0.001,outPath) {
+  # source(paste(curPath,"R/plink_clump.R",sep=""))
+  datGRAPPLE <- GRAPPLE::getInput(
+    sel.files = selGWAS.file,
+    exp.files = expGWAS.file,
+    out.files = outGWAS.file,
+    max.p.thres = pval,
+    plink_refdat = ldRef,
+    plink_exe = plinkbinr::get_plink_exe(),
+    clump_r2 = clump_r2,
+  )
+  # detect the number of pleiotropy
+  datGRAPPLE.diagnosis <- tryCatch({
+    GRAPPLE::findModes(datGRAPPLE$data,)
+  }, error=function(e) {
+    GRAPPLE::findModes(datGRAPPLE$data)
+  })
+
+  #   # save the no of mode detected by using GRAPPLE
+  #     ggplot2::ggsave(filename=paste(outPath,"/Fig1_GRAPPLE_nModes.pdf",sep=""),
+  #            plot=datGRAPPLE.diagnosis$p +
+  #              ggplot2::labs(title="Pleiotropic effects detection using MR-GRAPPLE"),
+  #            dpi=300,width=7,height=5)
+  plt.GRAPPLE <- datGRAPPLE.diagnosis$p +
+    ggplot2::labs(title="Pleiotropic effects detection using MR-GRAPPLE")
+
+  datProteinCodingGene <- plyr::rbind.fill(
+    datGRAPPLE.diagnosis$markers,
+    datGRAPPLE.diagnosis$supp_gwas)
+
+  # normality test
+  grDevices::pdf(file=paste(outPath,"/Fig2_GRAPPLE_NormalityTest.pdf",sep=""),
+      width=5,height=5,onefile=FALSE)
+  datGRAPPLE.normtest <- GRAPPLE::grappleRobustEst(datGRAPPLE$data)
+  grDevices::dev.off()
+
+  datPleiotropyEffects <- data.frame(
+    beta.pleiotropy=datGRAPPLE.normtest$beta.hat,
+    se.pleiotropy=sqrt(datGRAPPLE.normtest$beta.var),
+    pval.pleiotropy=format(datGRAPPLE.normtest$beta.p.value,digits=3)
+  )
+
+  # output the outlierSNP
+  outlierSNPs <- row.names(datGRAPPLE.normtest$outliers)
+
+  return(list(datGRAPPLE=datGRAPPLE,
+              datGRAPPLE.ProteinCodingGene=datProteinCodingGene,
+              datGRAPPLE.Pleiotropy=datPleiotropyEffects,
+              datGRAPPLE.outlierSNPs=outlierSNPs,
+              pltGRAPPLE=plt.GRAPPLE))
+}
+
+
+
+
+
+
 
 
