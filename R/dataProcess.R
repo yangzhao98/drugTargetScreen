@@ -325,6 +325,7 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
   }
   ##
   datUKBGWAS <- merge(datUKBGWAS,datUKBSNP,by="variant",all.x=TRUE)
+  data.table::setDT(datUBKGWAS)
   datUKBGWAS[
     ,`:=`(chr=strsplit(variant,":")[[1]][1],
           pos=strsplit(variant,":")[[1]][2],
