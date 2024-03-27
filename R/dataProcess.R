@@ -327,20 +327,20 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
   data.table::setDT(datUKBGWAS)
   data.table::setDT(datUKBSNP)
   datUKBGWAS <- merge(datUKBGWAS,datUKBSNP,by="variant",all.x=TRUE)
-  datUKBGWAS <- within(datUKBGWAS,{
-    chr <- strsplit(variant,":")[[1]][1]
-    pos <- strsplit(variant,":")[[1]][2]
-    ea <- strsplit(variant,":")[[1]][3]
-    ra <- strsplit(variant,":")[[1]][4]
-    nCase <- ceiling(expected_case_minor_AC/(2*minor_AF))
-  })
-  datUKBGWAS <- within(datUKBGWAS,{
-    effect_allele <- ifelse(ea==minor_allele,ea,ra)
-    eaf <- ifelse(ea==minor_allele,minor_AF,1-minor_AF)
-    other_allele <- ifelse(ea==minor_allele,ra,ea)
-    betaNew <- logORTransformation(beta,nCase,n_complete_samples)
-    seNew <- logORTransformation(se,nCase,n_complete_samples)
-  })
+  datUKBGWAS <- datUKBGWAS[
+    ,`:=`(chr=strsplit(variant,":")[[1]][1],
+          pos=strsplit(variant,":")[[1]][2],
+          ea=strsplit(variant,":")[[1]][3],
+          ra=strsplit(variant,":")[[1]][4],
+          nCase=ceiling(expected_case_minor_AC/(2*minor_AF)))
+    ,by=.(variant)]
+  datUKBGWAS <- datUKBGWAS[
+    ,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
+          eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
+          other_allele=ifelse(ea==minor_allele,ra,ea),
+          betaNew=logORTransformation(beta,nCase,n_complete_samples),
+          seNew=logORTransformation(se,nCase,n_complete_samples))
+    ,by=.(variant)]
 
   datUKBGWAS <- TwoSampleMR::format_data(
     dat=as.data.frame(datUKBGWAS),
