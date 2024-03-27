@@ -326,7 +326,7 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
   ##
   datUKBGWAS <- merge(datUKBGWAS,datUKBSNP,by="variant",all.x=TRUE)
   data.table::setDT(datUKBGWAS)
-  datUKBGWAS[
+  datUKBGWAS <- datUKBGWAS[
     ,`:=`(chr=strsplit(variant,":")[[1]][1],
           pos=strsplit(variant,":")[[1]][2],
           ea=strsplit(variant,":")[[1]][3],
@@ -334,7 +334,7 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
           nCase=ceiling(expected_case_minor_AC/(2*minor_AF)))
     ,by=.(variant)
   ]
-  datUKBGWAS[,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
+  datUKBGWAS <- datUKBGWAS[,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
                    eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
                    other_allele=ifelse(ea==minor_allele,ra,ea),
                    betaNew=logORTransformation(beta,nCase,n_complete_samples),
