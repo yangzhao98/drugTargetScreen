@@ -311,7 +311,7 @@ dat4GRAPPLE <- function(dat) {
 #' @param datUKBSNP processed variants info obtained from variants.tsv.gz with \code{c("variant","rsid","consequence","consequence_category")}
 #' @param type the type of exposure- or outcome- GWAS processed using \code{TwoSampleMR::format_data()}
 #' @export
-dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
+dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome",binaryTrait=TRUE) {
   ## Variants info
   # selCols <- c("variant","rsid","consequence","consequence_category")
   # datUKBSNP <- data.table::fread(UKBSNP.file,select=selCols)
@@ -319,6 +319,7 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
   datUKBGWAS <- data.table::fread(UKBGWAS.file)
   datUKBGWAS <- datUKBGWAS[datUKBGWAS$low_confidence_variant==FALSE,]
   ## log(OR) transformation from BOLT-LMM binary trait analysis
+  ## ref: https://data.bris.ac.uk/data/dataset/pnoat8cxo0u52p6ynfaekeigi
   logORTransformation <- function(beta,nCase,nTot) {
     u <- nCase/nTot
     beta/(u*(1-u))
@@ -327,30 +328,54 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome") {
   data.table::setDT(datUKBGWAS)
   data.table::setDT(datUKBSNP)
   datUKBGWAS <- merge(datUKBGWAS,datUKBSNP,by="variant",all.x=TRUE)
-  datUKBGWAS <- datUKBGWAS[
-    ,`:=`(chr=strsplit(variant,":")[[1]][1],
-          pos=strsplit(variant,":")[[1]][2],
-          ea=strsplit(variant,":")[[1]][3],
-          ra=strsplit(variant,":")[[1]][4],
-          nCase=ceiling(expected_case_minor_AC/(2*minor_AF)))
-    ,by=.(variant)]
-  datUKBGWAS <- datUKBGWAS[
-    ,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
-          eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
-          other_allele=ifelse(ea==minor_allele,ra,ea),
-          betaNew=logORTransformation(beta,nCase,n_complete_samples),
-          seNew=logORTransformation(se,nCase,n_complete_samples))
-    ,by=.(variant)]
+  if (binaryTrait) {
+    datUKBGWAS <- datUKBGWAS[
+      ,`:=`(chr=strsplit(variant,":")[[1]][1],
+            pos=strsplit(variant,":")[[1]][2],
+            ea=strsplit(variant,":")[[1]][3],
+            ra=strsplit(variant,":")[[1]][4],
+            nCase=ceiling(expected_case_minor_AC/(2*minor_AF)))
+      ,by=.(variant)]
+    datUKBGWAS <- datUKBGWAS[
+      ,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
+            eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
+            other_allele=ifelse(ea==minor_allele,ra,ea),
+            betaNew=logORTransformation(beta,nCase,n_complete_samples),
+            seNew=logORTransformation(se,nCase,n_complete_samples))
+      ,by=.(variant)]
 
-  datUKBGWAS <- TwoSampleMR::format_data(
-    dat=as.data.frame(datUKBGWAS),
-    type=type,
-    snp_col="rsid",beta_col="betaNew",se_col="seNew",pval_col="pval",
-    effect_allele_col="effect_allele",
-    other_allele_col="other_allele",
-    eaf_col="eaf",
-    chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples"
-  )
+    datUKBGWAS <- TwoSampleMR::format_data(
+      dat=as.data.frame(datUKBGWAS),
+      type=type,
+      snp_col="rsid",beta_col="betaNew",se_col="seNew",pval_col="pval",
+      effect_allele_col="effect_allele",
+      other_allele_col="other_allele",
+      eaf_col="eaf",
+      chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples"
+    )
+  } else {
+    datUKBGWAS <- datUKBGWAS[
+      ,`:=`(chr=strsplit(variant,":")[[1]][1],
+            pos=strsplit(variant,":")[[1]][2],
+            ea=strsplit(variant,":")[[1]][3],
+            ra=strsplit(variant,":")[[1]][4])
+      ,by=.(variant)]
+    datUKBGWAS <- datUKBGWAS[
+      ,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
+            eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
+            other_allele=ifelse(ea==minor_allele,ra,ea))
+      ,by=.(variant)]
+
+    datUKBGWAS <- TwoSampleMR::format_data(
+      dat=as.data.frame(datUKBGWAS),
+      type=type,
+      snp_col="rsid",beta_col="beta",se_col="se",pval_col="pval",
+      effect_allele_col="effect_allele",
+      other_allele_col="other_allele",
+      eaf_col="eaf",
+      chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples"
+    )
+  }
   datUKBGWAS <- datUKBGWAS[!is.na(datUKBGWAS$SNP),]
   return(datUKBGWAS)
 }
