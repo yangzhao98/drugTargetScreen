@@ -4,7 +4,7 @@
 \alias{dat4UKBNealeLab}
 \title{data processing for UKB-Neale Labs GWAS summary statistics}
 \usage{
-dat4UKBNealeLab(UKBGWAS.file, datUKBSNP, type = "outcome")
+dat4UKBNealeLab(UKBGWAS.file, datUKBSNP, type = "outcome", binaryTrait = TRUE)
 }
 \arguments{
 \item{UKBGWAS.file}{path of the GWAS summary statistics}

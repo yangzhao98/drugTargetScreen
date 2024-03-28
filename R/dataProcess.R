@@ -325,25 +325,26 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome",binaryTrait=TR
     beta/(u*(1-u))
   }
   ##
-  data.table::setDT(datUKBGWAS)
-  data.table::setDT(datUKBSNP)
-  datUKBGWAS <- merge(datUKBGWAS,datUKBSNP,by="variant",all.x=TRUE)
+  data.table::setDT(datUKBGWAS);data.table::setkey(datUKBGWAS,"variant")
+  data.table::setDT(datUKBSNP); data.table::setkey(datUKBSNP,"variant")
+  datUKBGWAS <- datUKBGWAS[datUKBSNP,nomatch=0]
+  #system.time(datUKBGWAS <- merge(datUKBGWAS,datUKBSNP,by="variant",all.x=TRUE))
+  a <- strsplit(datUKBGWAS$variant,":")
+  datUKBGWAS$chr <- sapply(a,"[[",1)
+  datUKBGWAS$pos <- sapply(a,"[[",2)
+  datUKBGWAS$ea <- sapply(a,"[[",3)
+  datUKBGWAS$ra <- sapply(a,"[[",4)
   if (binaryTrait) {
-    datUKBGWAS <- datUKBGWAS[
-      ,`:=`(chr=strsplit(variant,":")[[1]][1],
-            pos=strsplit(variant,":")[[1]][2],
-            ea=strsplit(variant,":")[[1]][3],
-            ra=strsplit(variant,":")[[1]][4],
-            nCase=ceiling(expected_case_minor_AC/(2*minor_AF)))
+    datUKBGWAS[
+      ,`:=`(nCase=ceiling(expected_case_minor_AC/(2*minor_AF)))
       ,by=.(variant)]
-    datUKBGWAS <- datUKBGWAS[
+    datUKBGWAS[
       ,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
             eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
             other_allele=ifelse(ea==minor_allele,ra,ea),
             betaNew=logORTransformation(beta,nCase,n_complete_samples),
             seNew=logORTransformation(se,nCase,n_complete_samples))
-      ,by=.(variant)]
-
+      ,by=.(variant)][,unique("variant")]
     datUKBGWAS <- TwoSampleMR::format_data(
       dat=as.data.frame(datUKBGWAS),
       type=type,
@@ -351,21 +352,13 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome",binaryTrait=TR
       effect_allele_col="effect_allele",
       other_allele_col="other_allele",
       eaf_col="eaf",
-      chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples"
-    )
+      chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples")
   } else {
-    datUKBGWAS <- datUKBGWAS[
-      ,`:=`(chr=strsplit(variant,":")[[1]][1],
-            pos=strsplit(variant,":")[[1]][2],
-            ea=strsplit(variant,":")[[1]][3],
-            ra=strsplit(variant,":")[[1]][4])
-      ,by=.(variant)]
-    datUKBGWAS <- datUKBGWAS[
+    datUKBGWAS[
       ,`:=`(effect_allele=ifelse(ea==minor_allele,ea,ra),
             eaf=ifelse(ea==minor_allele,minor_AF,1-minor_AF),
             other_allele=ifelse(ea==minor_allele,ra,ea))
-      ,by=.(variant)]
-
+      ,by=.(variant)][,unique("variant")]
     datUKBGWAS <- TwoSampleMR::format_data(
       dat=as.data.frame(datUKBGWAS),
       type=type,
@@ -373,8 +366,7 @@ dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome",binaryTrait=TR
       effect_allele_col="effect_allele",
       other_allele_col="other_allele",
       eaf_col="eaf",
-      chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples"
-    )
+      chr_col="chr",pos_col="pos",samplesize_col="n_complete_samples")
   }
   datUKBGWAS <- datUKBGWAS[!is.na(datUKBGWAS$SNP),]
   return(datUKBGWAS)
