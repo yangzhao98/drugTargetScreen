@@ -148,8 +148,17 @@ getLDmatrix <- function(dat,ldRef,pval,threads=36,withAlleles=TRUE) {
   # )
   shell <- ifelse(Sys.info()["sysname"] == "Windows", "cmd", "sh")
   fn <- tempfile()
-  utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval.exposure"]]),
-                     file = fn, row.names = F, col.names = T, quote = F)
+  if(sum(names(dat) %in% c("pval.exposure"))==1) {
+    utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval.exposure"]]),
+                       file = fn, row.names = F, col.names = T, quote = F)
+  } else if (sum(names(dat) %in% c("pval.outcome"))==1) {
+    utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval.outcome"]]),
+                       file = fn, row.names = F, col.names = T, quote = F)
+  } else {
+    utils::write.table(data.frame(SNP=dat[["SNP"]],P=dat[["pval"]]),
+                       file = fn, row.names = F, col.names = T, quote = F)
+  }
+
   fun1 <- paste0(shQuote(plinkbinr::get_plink_exe(), type = shell),
                  " --bfile ", shQuote(ldRef, type = shell),
                  " --extract ", shQuote(fn, type = shell),
@@ -309,7 +318,9 @@ dat4GRAPPLE <- function(dat) {
 #' @title data processing for UKB-Neale Labs GWAS summary statistics
 #' @param UKBGWAS.file path of the GWAS summary statistics
 #' @param datUKBSNP processed variants info obtained from variants.tsv.gz with \code{c("variant","rsid","consequence","consequence_category")}
-#' @param type the type of exposure- or outcome- GWAS processed using \code{TwoSampleMR::format_data()}
+#' @param type the type of exposure- or outcome- GWAS processed using \code{TwoSampleMR::format_data()}. By default, \code{type="outcome"}
+#' @param binaryTrait an indicator of a binary trait or not. By default, \code{binaryTrait=TRUE}.
+#' @import data.table
 #' @export
 dat4UKBNealeLab <- function(UKBGWAS.file,datUKBSNP,type="outcome",binaryTrait=TRUE) {
   ## Variants info

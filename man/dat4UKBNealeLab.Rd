@@ -11,7 +11,9 @@ dat4UKBNealeLab(UKBGWAS.file, datUKBSNP, type = "outcome", binaryTrait = TRUE)
 
 \item{datUKBSNP}{processed variants info obtained from variants.tsv.gz with \code{c("variant","rsid","consequence","consequence_category")}}
 
-\item{type}{the type of exposure- or outcome- GWAS processed using \code{TwoSampleMR::format_data()}}
+\item{type}{the type of exposure- or outcome- GWAS processed using \code{TwoSampleMR::format_data()}. By default, \code{type="outcome"}}
+
+\item{binaryTrait}{an indicator of a binary trait or not. By default, \code{binaryTrait=TRUE}.}
 }
 \description{
 data processing for UKB-Neale Labs GWAS summary statistics
