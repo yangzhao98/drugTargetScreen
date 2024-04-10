@@ -4,7 +4,7 @@ Title: Drug target screen
 Version: 0.1.0
 Author: Zhao Yang
 Maintainer: Zhao Yang <yangz98@connect.hku.hk>
-Description: To implement the framework for drug-target screening.
+Description: To implement the translational framework of genoproteomic studies for cardiovascular drug discovery.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: false
