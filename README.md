@@ -4,12 +4,12 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of \pkg{drugTargetScreen} is to implement the translational framework of genoproteomic studies for cardiovascular drug discovery. More details please refer to our **manuscript**. 
+The goal of \code{drugTargetScreen} is to implement the translational framework of genoproteomic studies for cardiovascular drug discovery. More details please refer to our **manuscript**. 
 
 
 ## Installation
 
-You can install the updated version of \pkg{drugTargetScreen} from [GitHub](https://github.com/yangzhao98/drugTargetScreen):
+You can install the updated version of \code{drugTargetScreen} from [GitHub](https://github.com/yangzhao98/drugTargetScreen):
 
 ``` r
 # install.packages("devtools")
