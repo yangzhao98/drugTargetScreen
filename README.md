@@ -9,7 +9,7 @@ The goal of *drugTargetScreen* is to implement the translational framework of ge
 
 ## Installation
 
-You can install the updated version of *drugTargetScreen* from [GitHub](https://github.com/yangzhao98/drugTargetScreen):
+You can install the developed version of *drugTargetScreen* from [GitHub](https://github.com/yangzhao98/drugTargetScreen):
 
 ``` r
 # install.packages("devtools")
