@@ -1,0 +1,41 @@
+Package: drugTargetScreen
+Type: Package
+Title: Drug target screen
+Version: 0.1.0
+Author: Zhao Yang
+Maintainer: Zhao Yang <yangz98@connect.hku.hk>
+Description: To implement the translational framework of genoproteomic studies for cardiovascular drug discovery.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: false
+Depends: R (>= 3.5.0)
+Imports: 
+    data.table,
+    dplyr,
+    foreign,
+    gaston,
+    geni.plots,
+    ggplot2,
+    ggrepel,
+    ggsci,
+    GRAPPLE,
+    grDevices,
+    ieugwasr,
+    MendelianRandomization,
+    mr.divw,
+    mr.raps,
+    mrclust,
+    plinkbinr,
+    plyr,
+    qvalue,
+    stats,
+    susieR,
+    TwoSampleMR,
+    utils
+RoxygenNote: 7.2.3
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+URL: https://yangzhao98.github.io/drugTargetScreen/
+
