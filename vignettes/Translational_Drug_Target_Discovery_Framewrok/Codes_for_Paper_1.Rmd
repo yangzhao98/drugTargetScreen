@@ -1,0 +1,150 @@
+---
+title: "Reproduce the applied example in A translational framework of genoproteomic studies for cardiovascular drug discovery"
+author: "YANG, Zhao"
+date: "`r format(Sys.time(), '%A, %B %d, %Y, %H:%M')`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Reproduce the applied example in A translational framework of genoproteomic studies for cardiovascular drug discovery}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE
+)
+```
+
+This document contains materials required for reproducing the results of the applied example in **A translational framework of genoproteomic studies for cardiovascular drug discovery**. More details of the translational framework, please refer to our **manuscript**. 
+
+
+## Prerequests
+
+### Packages
+
+To run the codes for the applied example, one have to install \code{drugTargetScreen} pkg in R from GitHub, as follows,
+
+```{r setup}
+# devtools::install_github("yangzhao98/drugTargetScreen",force=TRUE)
+library(drugTargetScreen)
+path.res <- getwd()
+```
+
+Moreover, one may have to install [PLINK](https://www.cog-genomics.org/plink2/) for LD clumping, with ancestry-specific 1000 Genome Project as the reference, available at [MRCIEU](http://fileserve.mrcieu.ac.uk/ld/1kg.v3.tgz). 
+
+### Data sources
+
+- GWAS summary statistics for LDL-C are available at the [Global Lipids Genetics Consortium](https://csg.sph.umich.edu/willer/public/glgc-lipids2021/)
+- GWAS summary statistics for CAD are available at the [CARDIoGRAMplusC4D Consortium](http://www.cardiogramplusc4d.org/data-downloads/)
+- GWAS summary statistics for 78 clinical endpoints and LDL-C in the UK Biobank are available at [Neale lab](https://www.nealelab.is/uk-biobank)
+- Summary statistics of *cis-* and *trans-*eQTLs are available at the [eQTLGen phase 1](https://www.eqtlgen.org/phase1.html)
+
+
+## Reproduce the results of the applied example
+
+This example screens and verifies the low-density lipoprotein cholesterol (LDL-C)-lowering drug targets of CETP inhibitors, statins (HMGCR), ezetimibe (NPC1L1), and PCSK9 inhibitors, which have been considered positive control examples in validating lipid-related therapeutics targets of coronary artery disease under the proposed translational framework. 
+
+### The translational framework for cardiovascular drug discovery
+
+Briefly, this framework consists of four main stages, 
+
+1. Causal biomarkers screen
+
+2. Drug-targeting protein discovery and verification
+
+    - Elucidation of possible heterogeneous genetic effects oriented by polygenic IVs across the genome for the biomarker, utilizing methodologies such as [Genome-wide mR Analysis under Pervasive PLEitropy (GRAPPLE)](https://github.com/jingshuw/GRAPPLE) and [MR-PATH](https://github.com/danieliong/MRPATH)
+
+    - Exploration of the putative protein-disease association using *cis*-acting pQTL as IVs, supplemented by the inclusion of *trans*-acting variants and *cis*-position, *trans*-acting variants, as appropriate
+
+    - Verification of putative drug-targeting proteins by examining whether the *cis*-acting variants are shared with the same causal variants as the upstream regulators or downstream intermediates, utilizing [colocalization](https://github.com/stephenslab/susieR) based on gene expression database or conducting cell and animal experiments. 
+
+3. Drug target relevant side effects exploration
+
+4. Therapeutic efficacy and safety emulation
+
+
+### Implementations
+
+```{r, eval=FALSE}
+## preparation
+source(paste(path.res,"/0_precondition.R",sep=""))
+source(paste(path.res,"/utilities.R",sep=""))
+
+## codes for stage 1. Causal biomarkers screen
+source(paste(path.res,"/1_cause_biomarkers_screen.R",sep=""))
+
+## codes for stage 2. Drug-targeting protein discovery and verification
+source(paste(path.res,"/2_discovery_verification.R",sep=""))
+
+## codes for stage 3. Drug target relevant side effects exploration
+source(paste(path.res,"/3_side_effects.R",sep=""))
+
+## codes for Stage 4. Therapeutic efficacy and safety emulation
+source(paste(path.res,"/4_target_trial_emulation.R",sep=""))
+```
+
+### Results
+
+```{r}
+load(paste(
+  path.res,"/",
+  grep(".RData",list.files(path.res),value=TRUE),
+  sep=""))
+library(ggpubr)
+library(ggplot2)
+library(ggrepel)
+```
+
+### Results in Stage 1
+
+Scatter plot of genetic effects on LDL-C and CAD using all SNPs at genome-wide significance with LD clumping at $r^2<0.3$ and those within either CETP, HMGCR, NPC1L1, and PCSK9 locus
+
+```{r fig.width=7,fig.height=5}
+plt.woCor
+```
+
+```{r fig.width=7,fig.height=5}
+plt.4Gene
+```
+
+
+### Results in Stage 2
+
+- Pleiotropic effects detected using profile likelihood under the GRAPPLE framework
+
+```{r fig.width=7,fig.height=5}
+plt.GRAPPLE.profile
+```
+
+- Forest plot of MR estimates obtained from MR based on various kinds of IVs
+
+```{r fig.width=7,fig.height=5}
+plt.Forest
+```
+
+- Colocalization of LDL-C, eQTL, and CAD
+
+```{r fig.width=20,fig.height=10}
+plt.Step2
+```
+
+
+### Results in Stage 3
+
+Phenome-wide MR estimates of genetically mimicked effects of CETP inhibitors, statins (HMGCR), ezetimibe (NPC1L1), and PCSK9 inhibitors on 78 clinical endpoints with ICD-10 diagnoses in the UK Biobank 
+
+```{r fig.width=20,fig.height=5}
+plt.Step3
+```
+
+
+### Results in Stage 4
+
+The protective effects of hypothetical intervention in LDL-C-lowering on ASCVD, CVD, and all-cause mortality
+
+```{r fig.width=20,fig.height=5}
+plt.Step4
+```
+

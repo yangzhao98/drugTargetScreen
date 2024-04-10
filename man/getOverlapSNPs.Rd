@@ -22,3 +22,4 @@ getOverlapSNPs(dat1, trait1, dat2, trait2, ldRef, pval)
 \description{
 get the overlapped SNPs between two traits for colocalization analyses
 }
+\keyword{internal}

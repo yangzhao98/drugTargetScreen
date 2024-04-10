@@ -12,3 +12,4 @@ rnDat(dat)
 \description{
 remove ".exposure" and ".outcome" from a data frame
 }
+\keyword{internal}

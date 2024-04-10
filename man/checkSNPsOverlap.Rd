@@ -16,3 +16,4 @@ checkSNPsOverlap(dat1, dat2, pval)
 \description{
 calculate number of the overlapped SNPs between two traits given a pval threshold
 }
+\keyword{internal}
