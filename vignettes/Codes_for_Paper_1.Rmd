@@ -92,9 +92,6 @@ load(paste(
   path.res,"/",
   grep(".RData",list.files(path.res),value=TRUE),
   sep=""))
-library(ggpubr)
-library(ggplot2)
-library(ggrepel)
 ```
 
 ### Results in Stage 1

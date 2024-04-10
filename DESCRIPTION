@@ -15,6 +15,7 @@ Imports:
     gaston,
     geni.plots,
     ggplot2,
+    ggpubr,
     ggrepel,
     ggsci,
     GRAPPLE,
