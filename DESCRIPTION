@@ -1,6 +1,6 @@
 Package: drugTargetScreen
 Type: Package
-Title: Drug target screen
+Title: A translational framework for drug target discovery
 Version: 0.1.0
 Author: Zhao Yang
 Maintainer: Zhao Yang <yangz98@connect.hku.hk>
