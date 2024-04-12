@@ -1,0 +1,7 @@
+"0","# devtools::install_github(""yangzhao98/drugTargetScreen"",force=TRUE)"
+"0","library(drugTargetScreen)"
+"0","path.res <- getwd()"
+"0","load(paste("
+"0","  path.res,""/"","
+"0","  grep("".RData"",list.files(path.res),value=TRUE),"
+"0","  sep=""""))"
