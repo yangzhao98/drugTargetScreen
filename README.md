@@ -2,6 +2,7 @@
 # drugTargetScreen
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/yangzhao98/drugTargetScreen/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yangzhao98/drugTargetScreen/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of *drugTargetScreen* is to implement the translational framework of genoproteomic studies for cardiovascular drug discovery. More details please refer to our **manuscript**. 
