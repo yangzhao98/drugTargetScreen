@@ -19,6 +19,8 @@ knitr::opts_chunk$set(
 
 This document contains materials required for reproducing the results of the applied example in **A translational framework of genoproteomic studies for cardiovascular drug discovery**. More details of the translational framework, please refer to our **manuscript**. 
 
+> **Note**: To run the applied example successfully, you have to edit the scripts with your own data, parameters, and physical paths.
+
 
 ### 1. Prerequests
 
@@ -30,6 +32,10 @@ To run the codes for the applied example, one have to install \code{drugTargetSc
 # devtools::install_github("yangzhao98/drugTargetScreen",force=TRUE)
 library(drugTargetScreen)
 path.res <- getwd()
+load(paste(
+  path.res,"/",
+  grep(".RData",list.files(path.res),value=TRUE),
+  sep=""))
 ```
 
 Moreover, one may have to install [PLINK](https://www.cog-genomics.org/plink2/) for LD clumping, with ancestry-specific 1000 Genome Project as the reference, available at [MRCIEU](http://fileserve.mrcieu.ac.uk/ld/1kg.v3.tgz). 
@@ -42,9 +48,21 @@ Moreover, one may have to install [PLINK](https://www.cog-genomics.org/plink2/) 
 - Summary statistics of *cis-* and *trans-*eQTLs are available at the [eQTLGen phase 1](https://www.eqtlgen.org/phase1.html)
 
 
+---
+
 ### 2. Reproduce the results of the applied example
 
-This example screens and verifies the low-density lipoprotein cholesterol (LDL-C)-lowering drug targets of CETP inhibitors, statins (HMGCR), ezetimibe (NPC1L1), and PCSK9 inhibitors, which have been considered positive control examples in validating lipid-related therapeutics targets of coronary artery disease under the proposed translational framework. 
+This example screens and verifies the low-density lipoprotein cholesterol (LDL-C)-lowering drug targets of statins (HMGCR), ezetimibe (NPC1L1), and PCSK9 inhibitors, which have been considered positive control examples in [Schmidt et al. (2020)](10.1038/s41467-020-16969-0) and [Cardillo-Maranon et al. (2021)](10.1038/s41467-021-25731-z). 
+
+
+```{r}
+names(datPosCtrl) <- c("Drug-target genes",
+                       "Chr:position (GRCh37/hg19)",
+                       "OR (95% CI)")
+knitr::kable(datPosCtrl,
+             captions="Key results from Cardillo-Maranon et al. (2021)")
+```
+
 
 #### 2.1 The translational framework for cardiovascular drug discovery
 
@@ -63,6 +81,7 @@ Briefly, this framework consists of four main stages,
 3. Drug target relevant side effects exploration
 
 4. Therapeutic efficacy and safety emulation
+
 
 
 #### 2.2 Implementations
@@ -85,18 +104,14 @@ source(paste(path.res,"/3_side_effects.R",sep=""))
 source(paste(path.res,"/4_target_trial_emulation.R",sep=""))
 ```
 
-#### 2.3 Results
 
-```{r}
-load(paste(
-  path.res,"/",
-  grep(".RData",list.files(path.res),value=TRUE),
-  sep=""))
-```
 
-##### 2.3.1 Results in Stage 1
 
-Scatter plot of genetic effects on LDL-C and CAD using all SNPs at genome-wide significance with LD clumping at $r^2<0.3$ and those within either CETP, HMGCR, NPC1L1, and PCSK9 locus
+#### 2.3 Results of the applied example
+
+##### 2.3.1 Results from Stage 1
+
+Scatter plot of genetic effects on LDL-C and CAD using all SNPs at genome-wide significance with LD clumping at $r^2<0.3$ and those within either HMGCR, NPC1L1, or PCSK9 locus
 
 ```{r fig.width=7,fig.height=5}
 plt.woCor
@@ -107,7 +122,9 @@ plt.4Gene
 ```
 
 
-##### 2.3.2 Results in Stage 2
+
+
+##### 2.3.2 Results from Stage 2
 
 - Pleiotropic effects detected using profile likelihood under the GRAPPLE framework
 
@@ -128,7 +145,8 @@ plt.Step2
 ```
 
 
-##### 2.3.3 Results in Stage 3
+
+##### 2.3.3 Results from Stage 3
 
 Phenome-wide MR estimates of genetically mimicked effects of CETP inhibitors, statins (HMGCR), ezetimibe (NPC1L1), and PCSK9 inhibitors on 78 clinical endpoints with ICD-10 diagnoses in the UK Biobank 
 
@@ -137,9 +155,10 @@ plt.Step3
 ```
 
 
-##### 2.3.4 Results in Stage 4
 
-The protective effects of hypothetical intervention in LDL-C-lowering on ASCVD, CVD, and all-cause mortality
+##### 2.3.4 Results from Stage 4
+
+The protective effects of hypothetical interventions in LDL-C-lowering on ASCVD, CVD, and all-cause mortality
 
 ```{r fig.width=20,fig.height=5}
 plt.Step4
