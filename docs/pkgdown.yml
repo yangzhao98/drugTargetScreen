@@ -1,0 +1,10 @@
+pandoc: 3.1.1
+pkgdown: 2.0.7
+pkgdown_sha: ~
+articles:
+  Codes_for_Paper_1: Codes_for_Paper_1.html
+last_built: 2024-04-12T07:26Z
+urls:
+  reference: https://yangzhao98.github.io/drugTargetScreen/reference
+  article: https://yangzhao98.github.io/drugTargetScreen/articles
+
