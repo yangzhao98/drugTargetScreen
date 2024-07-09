@@ -103,10 +103,25 @@ run_SuSiE <- function(dat,ldRef,pval,nSampleSize,threads,withAlleles=TRUE) {
   # calc the z-score
   datTmp$dat$zscore <- with(datTmp$dat,beta.exposure/se.exposure)
   # run SuSiE
-  fittedSuSiE <- with(
-    datTmp$dat,
-    susieR::susie_rss(z=zscore,R=datTmp$LDmatrix,L=10,
-                      n=nSampleSize,estimate_residual_variance=TRUE))
+  fittedSuSiE <- tryCatch(
+    with(
+      datTmp$dat,
+      susieR::susie_rss(z=zscore,
+                        R=datTmp$LDmatrix,
+                        L=10,
+                        n=nSampleSize,
+                        estimate_residual_variance=TRUE)),
+    error=function(e) {
+      with(
+        datTmp$dat,
+        susieR::susie_rss(z=zscore,
+                          R=datTmp$LDmatrix,
+                          L=10,
+                          n=nSampleSize,
+                          estimate_residual_variance=FALSE))
+    }
+  )
+
   calPIP <- summary(fittedSuSiE)$vars
   selectedSNPidx <- sort(calPIP$variable[calPIP$cs>0])
   # plot the regional plot
