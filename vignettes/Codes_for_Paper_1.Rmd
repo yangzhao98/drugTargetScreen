@@ -1,7 +1,7 @@
 ---
 title: "Reproduce the applied example in A translational framework of genoproteomic studies for cardiovascular drug discovery"
 author: "YANG, Zhao"
-date: "`r format(Sys.time(), '%A, %B %d, %Y, %H:%M')`"
+date: "`r format(Sys.time())`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Reproduce the applied example in A translational framework of genoproteomic studies for cardiovascular drug discovery}
@@ -32,10 +32,10 @@ To run the codes for the applied example, one have to install \code{drugTargetSc
 # devtools::install_github("yangzhao98/drugTargetScreen",force=TRUE)
 library(drugTargetScreen)
 path.res <- getwd()
-load(paste(
-  path.res,"/",
-  grep(".RData",list.files(path.res),value=TRUE),
-  sep=""))
+load(paste0(path.res,"/",grep("RealExample_1_causal_bio",list.files(path.res),value=TRUE)))
+load(paste0(path.res,"/",grep("RealExample_2_discovery_",list.files(path.res),value=TRUE)))
+load(paste0(path.res,"/",grep("RealExample_3_side_",list.files(path.res),value=TRUE)))
+load(paste0(path.res,"/",grep("RealExample_4_target",list.files(path.res),value=TRUE)))
 ```
 
 Moreover, one may have to install [PLINK](https://www.cog-genomics.org/plink2/) for LD clumping, with ancestry-specific 1000 Genome Project as the reference, available at [MRCIEU](http://fileserve.mrcieu.ac.uk/ld/1kg.v3.tgz). 
@@ -52,15 +52,22 @@ Moreover, one may have to install [PLINK](https://www.cog-genomics.org/plink2/) 
 
 ### 2. Reproduce the results of the applied example
 
-This example screens and verifies the low-density lipoprotein cholesterol (LDL-C)-lowering drug targets of statins (HMGCR), ezetimibe (NPC1L1), and PCSK9 inhibitors, which have been considered positive control examples in [Schmidt et al. (2020)](10.1038/s41467-020-16969-0) and [Cardillo-Maranon et al. (2021)](10.1038/s41467-021-25731-z). 
+This applied example replicates three promising LDL-C-lowering therapeutic targets encoded by *APOB* [Ference et al. (2019)](https://doi.org/10.1001/jama.2018.20045), *LDLR* [Ference et al. (2019)](10.1001/jama.2018.20045), and *LPA* [Trinder et al. (2020)](10.1001/jamacardio.2020.5398) loci, which have been in developed in current clinical trials [O'Donoghue et al (2022)](10.1056/nejmoa2211023). 
 
 
 ```{r}
-names(datPosCtrl) <- c("Drug-target genes",
-                       "Chr:position (GRCh37/hg19)",
-                       "OR (95% CI)")
-knitr::kable(datPosCtrl,
-             captions="Key results from Cardillo-Maranon et al. (2021)")
+datPosCtrl <- data.frame(
+  `Druggable genes`= c("APOB","LDLR","LPA"),
+  `chr:pos (GRCh37/hg19)`=c("2:21224301-21266945",
+                            "6:160952515-161087407",
+                            "19:11200038-11244492"),
+  `OR (95% CI)`=c("1.28 (1.22,1.29)",
+                  "1.45 (1.41,1.50)",
+                  "1.30 (1.25,1.33)")
+)
+knitr::kable(
+  datPosCtrl,
+  captions="Genetically mimicked LDL-C-lowering effects on CAD")
 ```
 
 
@@ -88,20 +95,16 @@ Briefly, this framework consists of four main stages,
 
 ```{r, eval=FALSE}
 ## preparation
-source(paste(path.res,"/0_precondition.R",sep=""))
-source(paste(path.res,"/utilities.R",sep=""))
-
+source(paste0(path.res,"/0_precondition_update.R"))
+source(paste0(path.res,"/utilities_update.R"))
 ## codes for stage 1. Causal biomarkers screen
-source(paste(path.res,"/1_cause_biomarkers_screen.R",sep=""))
-
+source(paste0(path.res,"/1_cause_biomarkers_screen_update.R"))
 ## codes for stage 2. Drug-targeting protein discovery and verification
-source(paste(path.res,"/2_discovery_verification.R",sep=""))
-
+source(paste0(path.res,"/2_discovery_verification_update.R"))
 ## codes for stage 3. Drug target relevant side effects exploration
-source(paste(path.res,"/3_side_effects.R",sep=""))
-
+source(paste0(path.res,"/3_side_effects_update.R"))
 ## codes for Stage 4. Therapeutic efficacy and safety emulation
-source(paste(path.res,"/4_target_trial_emulation.R",sep=""))
+source(paste0(path.res,"/4_target_trial_emulation_update.R"))
 ```
 
 
@@ -111,7 +114,7 @@ source(paste(path.res,"/4_target_trial_emulation.R",sep=""))
 
 ##### 2.3.1 Results from Stage 1
 
-Scatter plot of genetic effects on LDL-C and CAD using all SNPs at genome-wide significance with LD clumping at $r^2<0.3$ and those within either HMGCR, NPC1L1, or PCSK9 locus
+Scatter plot of genetic effects on LDL-C and CAD using all SNPs at genome-wide significance with LD clumping at $r^2<0.3$ and those within either *APOB*, *LDLR*, or *LPA* loci.
 
 ```{r fig.width=7,fig.height=5}
 plt.woCor
@@ -140,18 +143,26 @@ plt.Forest
 
 - Colocalization of LDL-C, eQTL, and CAD
 
-```{r fig.width=20,fig.height=10}
-plt.Step2
+```{r fig.width=20,fig.height=10,warning=FALSE,message=FALSE}
+ggpubr::ggarrange(
+    plt.4Gene.CAD.runColoc[[1]],
+    plt.4Gene.CAD.runColoc[[2]],
+    plt.4Gene.CAD.runColoc[[3]],
+    labels=c("2d","2e","2f"),nrow=1)
 ```
 
 
 
 ##### 2.3.3 Results from Stage 3
 
-Phenome-wide MR estimates of genetically mimicked effects of CETP inhibitors, statins (HMGCR), ezetimibe (NPC1L1), and PCSK9 inhibitors on 78 clinical endpoints with ICD-10 diagnoses in the UK Biobank 
+Phenome-wide MR estimates of genetically mimicked LDL-C-lowering effects encoded by *APOB*, *LDLR*, and *LPA* loci on 78 clinical endpoints with ICD-10 diagnoses in the UK Biobank. 
 
 ```{r fig.width=20,fig.height=5}
-plt.Step3
+ggpubr::ggarrange(
+    plt.4Gene.Volcano[[1]],
+    plt.4Gene.Volcano[[2]],
+    plt.4Gene.Volcano[[3]],
+    labels=c("3a","3b","3c"),nrow=1)
 ```
 
 
@@ -161,6 +172,9 @@ plt.Step3
 The protective effects of hypothetical interventions in LDL-C-lowering on ASCVD, CVD, and all-cause mortality
 
 ```{r fig.width=20,fig.height=5}
-plt.Step4
+ggpubr::ggarrange(
+  plt.ASCVD0.CIF,plt.ASCVD.Int,plt.CVD.Int,plt.AllCause.Int,
+  labels=c("4a","4b","4c","4d"),nrow=1
+)
 ```
 
