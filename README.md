@@ -5,7 +5,7 @@
 [![R-CMD-check](https://github.com/yangzhao98/drugTargetScreen/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/yangzhao98/drugTargetScreen/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of *drugTargetScreen* is to implement the translational framework of genoproteomic studies for cardiovascular drug discovery. More details please refer to our **manuscript**. 
+The goal of *drugTargetScreen* is to implement the translational framework of genoproteomic studies for cardiovascular drug discovery. More details please refer to our [**manuscript**](https://doi.org/10.1038/s44325-024-00015-9). 
 
 
 ## Installation
@@ -25,6 +25,6 @@ To illustrate how the proposed translational framework can be used to help prior
 
 ## Citation
 
-Yang Z, Zhao J, Qi Y, Deng X, Ji ZL, Liu J. A translational framework of genoproteomic studies for cardiovascular drug discovery. *(Under review)*
+Yang Z, Zhao J, Qi Y, Deng X, Ji ZL, Liu J. A translational framework of genoproteomic studies for cardiovascular drug discovery. *npj Cardiovasc Health* 1, 12 (2024). [https://doi.org/10.1038/s44325-024-00015-9](https://doi.org/10.1038/s44325-024-00015-9)
 
 
